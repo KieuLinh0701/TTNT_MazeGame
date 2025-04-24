@@ -1,10 +1,10 @@
 import sys
 import random
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
-from PyQt6.QtGui import QPainter, QColor, QPen, QPixmap, QImage
-from PyQt6.QtCore import Qt, QUrl
+from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen
+from PyQt6.QtCore import Qt, QUrl, pyqtSignal
 import os
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
 
@@ -147,17 +147,30 @@ class MyWindow(QMainWindow):
         self.player.setAudioOutput(audio_output)
 
         audio_url = QUrl.fromLocalFile("C:/TTNT_MazeGame/music/game_music.mp3")
-        self.player.setSource(audio_url)  # Sử dụng QUrl trực tiếp
+        self.player.setSource(audio_url)
         self.player.play()
+
+        # Kết nối tín hiệu statusChanged để kiểm tra khi nào âm thanh kết thúc
+        self.player.mediaStatusChanged.connect(self.handle_media_status_changed)
+
+        self.btnStart.clicked.connect(self.change_ui) # Kết nối tín hiệu clicked với phương thức changeUi
+
+        # Lưu trữ trạng thái âm nhạc
+        self.music_playing = True
 
         # Set volume through QAudioOutput
         audio_output.setVolume(0.5)  # Adjust volume (value from 0.0 to 1.0)
 
-        self.btnStart.clicked.connect(self.change_ui)
-
     def handle_media_status_changed(self, status):
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
-            self.player.play()
+            self.player.play()  # Phát lại nhạc khi kết thúc
+
+    def toggle_music(self):
+        if self.music_playing:
+            self.player.pause()  # Tạm dừng nhạc
+        else:
+            self.player.play()  # Phát nhạc
+        self.music_playing = not self.music_playing  # Đảo trạng thái nhạc
 
     def change_ui(self):
         # Tạo một widget mới từ main.ui
@@ -176,6 +189,13 @@ class MyWindow(QMainWindow):
         self.mazeWidget = MazeWidget(self.mazeWidgetPlaceholder)
         self.mazeWidget.setGeometry(0, 0, self.mazeWidgetPlaceholder.width(), self.mazeWidgetPlaceholder.height())
         self.mazeWidget.show()
+
+        # Tìm nút btnMusic
+        self.btnMusic = new_widget.findChild(QPushButton, "btnMusic")
+        if not self.btnMusic:
+            raise RuntimeError("btnMusic không được tìm thấy trong main.ui!")
+        else:
+            self.btnMusic.clicked.connect(self.toggle_music)
 
         # Đảm bảo cửa sổ chính có kích thước giống như trong UI
         self.resize(self.size())
