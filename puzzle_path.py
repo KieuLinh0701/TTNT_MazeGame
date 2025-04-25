@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen
-from PyQt6.QtCore import Qt, QUrl, pyqtSignal
+from PyQt6.QtCore import Qt, QUrl
 import os
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
 
@@ -16,7 +16,14 @@ class MazeWidget(QWidget):
         self.maze_size = 21
         self.maze = []
         self.wall_image = QPixmap("C:/TTNT_MazeGame/image/wall.png")
-        self.player_image = QImage("C:/TTNT_MazeGame/image/actor.png")
+        self.player_images = {
+            "up": QImage("C:/TTNT_MazeGame/image/actor_up.png"),
+            "down": QImage("C:/TTNT_MazeGame/image/actor_down.png"),
+            "left": QImage("C:/TTNT_MazeGame/image/actor_left.png"),
+            "right": QImage("C:/TTNT_MazeGame/image/actor_right.png"),
+        }
+        self.current_player_image = self.player_images["right"]  # Mặc định là hướng xuống
+
         self.goal_image = QPixmap("C:/TTNT_MazeGame/image/goal.png")
         self.start_image = QPixmap("C:/TTNT_MazeGame/image/start.png")
         self.cell_size = 30
@@ -107,7 +114,7 @@ class MazeWidget(QWidget):
                     painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.goal_image)
 
         # Vẽ người chơi
-        scaled_image = self.player_image.scaled(
+        scaled_image = self.current_player_image.scaled(
             self.cell_size, self.cell_size,
             Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
         )
@@ -115,14 +122,19 @@ class MazeWidget(QWidget):
         player_y = self.player_pos[0] * self.cell_size + (self.cell_size - scaled_image.height()) // 2
         painter.drawImage(player_x, player_y, scaled_image)
 
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Up:
+            self.current_player_image = self.player_images["up"]
             self.move_player(0, -1)
         elif event.key() == Qt.Key.Key_Down:
+            self.current_player_image = self.player_images["down"]
             self.move_player(0, 1)
         elif event.key() == Qt.Key.Key_Left:
+            self.current_player_image = self.player_images["left"]
             self.move_player(-1, 0)
         elif event.key() == Qt.Key.Key_Right:
+            self.current_player_image = self.player_images["right"]
             self.move_player(1, 0)
     
     def move_player(self, dx, dy):
@@ -153,13 +165,37 @@ class MyWindow(QMainWindow):
         # Kết nối tín hiệu statusChanged để kiểm tra khi nào âm thanh kết thúc
         self.player.mediaStatusChanged.connect(self.handle_media_status_changed)
 
-        self.btnStart.clicked.connect(self.change_ui) # Kết nối tín hiệu clicked với phương thức changeUi
+        self.btnStart.clicked.connect(self.change_ui_level)  # Kết nối nút start
+        self.maze_size = 21  # Kích thước mặc định của mê cung (sẽ thay đổi theo lựa chọn)
 
         # Lưu trữ trạng thái âm nhạc
         self.music_playing = True
 
         # Set volume through QAudioOutput
         audio_output.setVolume(0.5)  # Adjust volume (value from 0.0 to 1.0)
+
+    def change_ui_level(self):
+        # Tạo một widget mới từ level.ui
+        new_widget = QWidget(self)
+        loadUi("C:/TTNT_MazeGame/ui/level.ui", new_widget)
+
+        # Gắn sự kiện cho từng nút
+        btn_easy = new_widget.findChild(QPushButton, "btnEasy")
+        btn_medium = new_widget.findChild(QPushButton, "btnMedium")
+        btn_hard = new_widget.findChild(QPushButton, "btnHard")
+        btn_expert = new_widget.findChild(QPushButton, "btnExpert")
+
+        if btn_easy:
+            btn_easy.clicked.connect(lambda: self.start_game_with_level(21))
+        if btn_medium:
+            btn_medium.clicked.connect(lambda: self.start_game_with_level(31))
+        if btn_hard:
+            btn_hard.clicked.connect(lambda: self.start_game_with_level(41))
+        if btn_expert:
+            btn_expert.clicked.connect(lambda: self.start_game_with_level(51))
+
+        self.setCentralWidget(new_widget)
+        self.update()
 
     def handle_media_status_changed(self, status):
         if status == QMediaPlayer.MediaStatus.EndOfMedia:
@@ -172,23 +208,29 @@ class MyWindow(QMainWindow):
             self.player.play()  # Phát nhạc
         self.music_playing = not self.music_playing  # Đảo trạng thái nhạc
 
+    def start_game_with_level(self, maze_size):
+        self.maze_size = maze_size  # Lưu kích thước mê cung
+        self.change_ui()  # Chuyển sang giao diện main.ui
+
     def change_ui(self):
         # Tạo một widget mới từ main.ui
         new_widget = QWidget(self)
         loadUi("C:/TTNT_MazeGame/ui/main.ui", new_widget)
-        
-        # Đặt widget mới làm central widget
-        self.setCentralWidget(new_widget)
-        
-        # Tìm mazeWidget trong UI mới
-        self.mazeWidgetPlaceholder = new_widget.findChild(QWidget, "mazeWidget")
-        if not self.mazeWidgetPlaceholder:
+
+        # Tìm mazeWidgetPlaceholder trong main.ui
+        maze_widget_placeholder = new_widget.findChild(QWidget, "mazeWidget")
+        if not maze_widget_placeholder:
             raise RuntimeError("Widget 'mazeWidget' không tồn tại trong main.ui!")
-        
-        # Tạo MazeWidget và thiết lập kích thước phù hợp
-        self.mazeWidget = MazeWidget(self.mazeWidgetPlaceholder)
-        self.mazeWidget.setGeometry(0, 0, self.mazeWidgetPlaceholder.width(), self.mazeWidgetPlaceholder.height())
-        self.mazeWidget.show()
+
+        # Tạo MazeWidget với kích thước tương ứng
+        maze_widget = MazeWidget(maze_widget_placeholder)
+        maze_widget.maze_size = self.maze_size  # Gán kích thước mê cung
+        maze_widget.create_and_draw_maze(self.maze_size)  # Tạo mê cung
+        maze_widget.setGeometry(0, 0, maze_widget_placeholder.width(), maze_widget_placeholder.height())
+        maze_widget.show()
+
+        # Call recreate_maze programmatically if needed
+        self.recreate_maze(maze_widget)  # Directly trigger maze regeneration
 
         # Tìm nút btnMusic
         self.btnMusic = new_widget.findChild(QPushButton, "btnMusic")
@@ -196,12 +238,29 @@ class MyWindow(QMainWindow):
             raise RuntimeError("btnMusic không được tìm thấy trong main.ui!")
         else:
             self.btnMusic.clicked.connect(self.toggle_music)
+            self.btnMusic.clicked.connect(lambda: maze_widget.setFocus())
 
-        # Đảm bảo cửa sổ chính có kích thước giống như trong UI
-        self.resize(self.size())
+        # Tìm nút btnBack
+        self.btnBack = new_widget.findChild(QPushButton, "btnBack")
+        self.btnBack.clicked.connect(self.change_ui_level)
 
-        # Đảm bảo mọi widget được vẽ lại
+        # Tìm nút btnReNew
+        self.btnReNew = new_widget.findChild(QPushButton, "btnReNew")
+        if self.btnReNew:
+            self.btnReNew.clicked.connect(lambda: self.recreate_maze(maze_widget))
+            self.btnReNew.clicked.connect(lambda: maze_widget.setFocus())
+
+        self.setCentralWidget(new_widget)
+
+        # Đảm bảo widget được vẽ lại
         self.update()
+    
+    def recreate_maze(self, maze_widget):
+        if not isinstance(maze_widget, MazeWidget):
+            raise ValueError("Provided widget is not a valid MazeWidget instance.")
+        maze_widget.create_and_draw_maze(maze_widget.maze_size)
+        maze_widget.player_pos = [1, 0]
+        maze_widget.update()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
