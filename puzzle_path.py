@@ -28,6 +28,14 @@ class MazeWidget(QWidget):
         self.start_image = QPixmap("C:/TTNT_MazeGame/image/start.png")
         self.cell_size = 30
 
+        self.dogs_images = {
+            "up": QImage("C:/TTNT_MazeGame/image/dog_up.png"),
+            "down": QImage("C:/TTNT_MazeGame/image/dog_down.png"),
+            "left": QImage("C:/TTNT_MazeGame/image/dog_left.png"),
+            "right": QImage("C:/TTNT_MazeGame/image/dog_right.png"),
+        }
+        self.dogs_images = self.player_images["down"]  # Mặc định là hướng xuống
+
         # Tạo mê cung và đặt vị trí người chơi
         self.create_and_draw_maze(self.maze_size)
         self.player_pos = [1, 0]
@@ -165,7 +173,7 @@ class MyWindow(QMainWindow):
         # Kết nối tín hiệu statusChanged để kiểm tra khi nào âm thanh kết thúc
         self.player.mediaStatusChanged.connect(self.handle_media_status_changed)
 
-        self.btnStart.clicked.connect(self.change_ui_level)  # Kết nối nút start
+        self.btnStart.clicked.connect(self.change_ui_des)  # Kết nối nút start
         self.maze_size = 21  # Kích thước mặc định của mê cung (sẽ thay đổi theo lựa chọn)
 
         # Lưu trữ trạng thái âm nhạc
@@ -173,6 +181,20 @@ class MyWindow(QMainWindow):
 
         # Set volume through QAudioOutput
         audio_output.setVolume(0.5)  # Adjust volume (value from 0.0 to 1.0)
+
+    def change_ui_des(self):
+        # Tạo một widget mới từ description.ui
+        new_widget = QWidget(self)
+        # Tải và hiển thị giao diện của description.ui vào widget mới
+        loadUi("C:/TTNT_MazeGame/ui/description.ui", new_widget)
+
+        # Kết nối nút Next với hành động chuyển qua UI của level
+        btn_next = new_widget.findChild(QPushButton, "btnNext")
+        if btn_next:
+            btn_next.clicked.connect(self.change_ui_level)  # Chuyển qua UI của level
+
+        # Đặt widget mới làm widget trung tâm của QMainWindow
+        self.setCentralWidget(new_widget)
 
     def change_ui_level(self):
         # Tạo một widget mới từ level.ui
@@ -193,6 +215,10 @@ class MyWindow(QMainWindow):
             btn_hard.clicked.connect(lambda: self.start_game_with_level(41))
         if btn_expert:
             btn_expert.clicked.connect(lambda: self.start_game_with_level(51))
+
+        # Tìm nút btnBack
+        self.btnBack = new_widget.findChild(QPushButton, "btnBack")
+        self.btnBack.clicked.connect(self.change_ui_des)
 
         self.setCentralWidget(new_widget)
         self.update()

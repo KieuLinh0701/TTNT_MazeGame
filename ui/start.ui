@@ -17,7 +17,11 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>Puzzle Path</string>
+   <string>Hard Way To School</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../image/ic_maze.png</normaloff>../image/ic_maze.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {
@@ -30,53 +34,13 @@
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="btnStart">
-    <property name="geometry">
-     <rect>
-      <x>600</x>
-      <y>620</y>
-      <width>231</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <property name="sizePolicy">
-     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-      <horstretch>0</horstretch>
-      <verstretch>0</verstretch>
-     </sizepolicy>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton {
-    background-color: #003366; /* Màu xanh đậm hài hòa */
-    color: #ffffff; /* Chữ màu trắng nổi bật */
-    border: 2px solid #00509e; /* Viền xanh sáng hơn */
-    border-radius: 8px; /* Bo tròn góc nút */
-    padding: 10px; /* Đệm bên trong nút */
-    font-size: 20px; /* Kích thước chữ */
-}
-
-QPushButton:hover {
-    background-color: #00509e; /* Màu xanh sáng hơn khi hover */
-    border: 2px solid #007bff; /* Viền xanh sáng hơn nữa */
-}
-
-QPushButton:pressed {
-    background-color: #001a3d; /* Màu tối hơn khi bấm */
-    border: 2px solid #003366; /* Viền đậm hơn */
-}
-</string>
-    </property>
-    <property name="text">
-     <string>START</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>190</y>
-      <width>1101</width>
-      <height>141</height>
+      <x>480</x>
+      <y>80</y>
+      <width>440</width>
+      <height>81</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -89,7 +53,7 @@ QPushButton:pressed {
      <string notr="true">QLabel {
     font-family: bungee;  /* Font chữ hiện đại và dễ đọc */
     font-weight: bold;                /* Chữ đậm, làm nổi bật tiêu đề */
-    font-size: 140px;                  /* Kích thước chữ lớn để dễ đọc */
+    font-size: 50px;                  /* Kích thước chữ lớn để dễ đọc */
     color: #ffffff;                   /* Màu chữ trắng, nổi bật trên nền tối */
     text-align: center;               /* Căn giữa chữ */
     background-color: transparent;    /* Không có nền cho QLabel */
@@ -107,7 +71,126 @@ QLabel#title {
 </string>
     </property>
     <property name="text">
-     <string>PUZZLE PATH</string>
+     <string>Hard Way To</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>265</x>
+      <y>130</y>
+      <width>870</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    font-family: bungee;  /* Font chữ hiện đại và dễ đọc */
+    font-weight: bold;                /* Chữ đậm, làm nổi bật tiêu đề */
+    font-size: 160px;                  /* Kích thước chữ lớn để dễ đọc */
+    color: #FFD700;                   /* Màu chữ trắng, nổi bật trên nền tối */
+    text-align: center;               /* Căn giữa chữ */
+    background-color: transparent;    /* Không có nền cho QLabel */
+    border: none;                     /* Không có viền */
+    padding: 20px;                    /* Đệm xung quanh chữ */
+}
+
+QLabel#title {
+    font-family: 'Verdana', sans-serif; /* Font chữ tùy chỉnh (có thể thay đổi theo sở thích) */
+    font-size: 40px;                   /* Kích thước chữ rất lớn */
+    color: #ffcc00;                    /* Màu vàng nổi bật (có thể thay đổi) */
+    font-weight: bold;                 /* Làm chữ đậm */
+    letter-spacing: 2px;               /* Tăng khoảng cách giữa các ký tự */
+}
+</string>
+    </property>
+    <property name="text">
+     <string>SCHOOL</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>470</x>
+      <y>460</y>
+      <width>201</width>
+      <height>191</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../image/dog_right.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>670</x>
+      <y>330</y>
+      <width>271</width>
+      <height>381</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="pixmap">
+     <pixmap>../image/actor_run.png</pixmap>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnStart">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>720</y>
+      <width>230</width>
+      <height>65</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-color: #003366; /* Màu xanh đậm hài hòa */
+    color: #ffffff; /* Chữ màu trắng nổi bật */
+    border: 2px solid #00509e; /* Viền xanh sáng hơn */
+    border-radius: 8px; /* Bo tròn góc nút */
+    padding: 10px; /* Đệm bên trong nút */
+    font-size: 25px; /* Kích thước chữ */
+	font-family: bungee;
+}
+
+QPushButton:hover {
+    background-color: #00509e; /* Màu xanh sáng hơn khi hover */
+    border: 2px solid #007bff; /* Viền xanh sáng hơn nữa */
+}
+
+QPushButton:pressed {
+    background-color: #001a3d; /* Màu tối hơn khi bấm */
+    border: 2px solid #003366; /* Viền đậm hơn */
+}
+</string>
+    </property>
+    <property name="text">
+     <string>START</string>
     </property>
    </widget>
   </widget>
