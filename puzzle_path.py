@@ -2,7 +2,7 @@ import sys
 import random
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
 from PyQt6.uic import loadUi
-from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput, QSoundEffect
 from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen
 from PyQt6.QtCore import Qt, QUrl
 import os
@@ -11,6 +11,14 @@ os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
 class MazeWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        # Initialize footstep sound with QMediaPlayer
+        self.step_player = QMediaPlayer(self)
+        audio_output = QAudioOutput(self)
+        self.step_player.setAudioOutput(audio_output)
+
+        # Set footstep sound source (MP3)
+        self.step_player.setSource(QUrl.fromLocalFile("C:/TTNT_MazeGame/music/footstep.mp3"))
 
         # Cài đặt kích thước mê cung và hình ảnh
         self.maze_size = 21
@@ -150,6 +158,9 @@ class MazeWidget(QWidget):
         if self.is_valid_move(new_pos[0], new_pos[1]):
             self.player_pos = new_pos
             self.update()
+            
+            # Play the footstep sound using QMediaPlayer
+            self.step_player.play()
 
     def is_valid_move(self, row, col):
         if row < 0 or col < 0 or row >= len(self.maze) or col >= len(self.maze[row]):
