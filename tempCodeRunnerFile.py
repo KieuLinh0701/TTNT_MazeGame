@@ -1,19 +1,7 @@
-import sys
-import random
-from queue import PriorityQueue
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
-from PyQt6.uic import loadUi
-from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput, QSoundEffect
-from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen
-from PyQt6.QtCore import Qt, QUrl, QTimer
-import os
-os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
-
 class MazeWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.dog_movement_timer = None
         # Ensure spawn_timer is created here
         self.spawn_timer = QTimer(self)
         self.dog_spawn_time = 5000  # Example time
@@ -73,10 +61,6 @@ class MazeWidget(QWidget):
             row, col = random.randint(1, self.maze_size-2), random.randint(1, self.maze_size-2)
 
         self.dog_pos = [row, col]  # Lưu vị trí con chó.
-
-        # Phát âm thanh khi con chó xuất hiện (khi spawn_dog được gọi)
-        self.appear_dog.play()
-        
         self.update()  # Vẽ lại mê cung sau khi con chó được spawn.
 
         self.update_dog_path()
@@ -92,11 +76,6 @@ class MazeWidget(QWidget):
         path = self.a_star(start, goal)
 
         if path:
-            # Dừng tiến trình di chuyển cũ nếu đang chạy
-            if self.dog_movement_timer:
-                self.dog_movement_timer.stop()
-                self.dog_movement_timer = None
-
             # Di chuyển con chó qua từng bước của con đường
             def move_dog(path_steps, index=0):
                 if index < len(path_steps):
@@ -118,13 +97,8 @@ class MazeWidget(QWidget):
                     elif next_pos[1] > current_pos[1]:
                         self.dog_image = self.dog_images["right"]
                     
-                    # Tạo tiến trình mới cho bước tiếp theo
-                    self.dog_movement_timer = QTimer(self)
-                    self.dog_movement_timer.setSingleShot(True)
-                    self.dog_movement_timer.timeout.connect(lambda: move_dog(path_steps, index + 1))
-                    self.dog_movement_timer.start(500)  # 500ms delay giữa các bước
-                else:
-                    self.dog_movement_timer = None  # Reset timer khi hoàn thành di chuyển
+                    # Đặt độ trễ cho mỗi bước di chuyển
+                    QTimer.singleShot(500, lambda: move_dog(path_steps, index + 1))  # 300ms delay giữa các bước
 
             # Bắt đầu di chuyển con chó qua từng bước
             move_dog(path)
@@ -182,28 +156,24 @@ class MazeWidget(QWidget):
         return None
     
     def reset_dog_movement(self, spawn_time):
-        # 1. Dừng và xóa timer di chuyển của con chó
-        if self.dog_movement_timer:
-            self.dog_movement_timer.stop()
-            self.dog_movement_timer.deleteLater()
-            self.dog_movement_timer = None
-
-        # 2. Dừng và xóa spawn_timer (nếu đang chạy)
-        if self.spawn_timer:
-            self.spawn_timer.stop()
-            self.spawn_timer.deleteLater()
-            self.spawn_timer = None
-
-        # 3. Xóa trạng thái và hình ảnh con chó
+        # Dừng tất cả các hành động di chuyển của con chó cũ
+        self.spawn_timer.stop()  # Dừng timer nếu có
+        
+        # Xóa vị trí con chó hiện tại và đặt lại hình ảnh mặc định
         self.dog_pos = None
-        self.dog_image = self.dog_images["down"]  # Hình ảnh mặc định
-        self.update()  # Vẽ lại giao diện
+        self.dog_image = self.dog_images["down"]  # Mặc định là hướng xuống
+        
+        # Cập nhật lại giao diện sau khi reset
+        self.update()
 
-        # 4. Tạo lại spawn_timer và đặt lại thời gian spawn
-        self.spawn_timer = QTimer(self)
-        self.spawn_timer.setSingleShot(True)  # Chỉ chạy một lần
-        self.spawn_timer.timeout.connect(self.spawn_dog)
-        self.spawn_timer.start(spawn_time)  # Đặt thời gian spawn
+        # Gọi lại phương thức spawn_dog để con chó xuất hiện lại từ đầu
+        self.set_dog_spawn_time(spawn_time)
+
+        # Phát lại âm thanh khi con chó xuất hiện
+        self.appear_dog.play()
+
+        # Đảm bảo con chó bắt đầu di chuyển từ đầu sau khi spawn lại
+        self.spawn_dog()
 
 
     def create_and_draw_maze(self, size):
@@ -315,17 +285,19 @@ class MazeWidget(QWidget):
         if event.key() == Qt.Key.Key_Up:
             self.current_player_image = self.player_images["up"]
             self.move_player(0, -1)
+            self.update_dog_path()
         elif event.key() == Qt.Key.Key_Down:
             self.current_player_image = self.player_images["down"]
             self.move_player(0, 1)
+            self.update_dog_path()
         elif event.key() == Qt.Key.Key_Left:
             self.current_player_image = self.player_images["left"]
             self.move_player(-1, 0)
+            self.update_dog_path()
         elif event.key() == Qt.Key.Key_Right:
             self.current_player_image = self.player_images["right"]
             self.move_player(1, 0)
-        
-        self.update_dog_path()
+            self.update_dog_path()
     
     def move_player(self, dx, dy):
         new_pos = [self.player_pos[0] + dy, self.player_pos[1] + dx]
@@ -340,161 +312,3 @@ class MazeWidget(QWidget):
         if row < 0 or col < 0 or row >= len(self.maze) or col >= len(self.maze[row]):
             return False
         return self.maze[row][col] in (1, 2, 3)
-
-class MyWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        loadUi("C:/TTNT_MazeGame/ui/start.ui", self)
-
-        # Thiết lập âm thanh nền
-        self.player = QMediaPlayer(self)
-        audio_output = QAudioOutput(self)
-        self.player.setAudioOutput(audio_output)
-
-        audio_url = QUrl.fromLocalFile("C:/TTNT_MazeGame/music/game_music.mp3")
-        self.player.setSource(audio_url)
-        self.player.play()
-
-        # Kết nối tín hiệu statusChanged để kiểm tra khi nào âm thanh kết thúc
-        self.player.mediaStatusChanged.connect(self.handle_media_status_changed)
-
-        self.btnStart.clicked.connect(self.change_ui_des)  # Kết nối nút start
-        self.maze_size = 21  # Kích thước mặc định của mê cung (sẽ thay đổi theo lựa chọn)
-
-        # Lưu trữ trạng thái âm nhạc
-        self.music_playing = True
-
-        # Set volume through QAudioOutput
-        audio_output.setVolume(0.3)  # Adjust volume (value from 0.0 to 1.0)
-
-    def change_ui_des(self):
-        # Tạo một widget mới từ description.ui
-        new_widget = QWidget(self)
-        # Tải và hiển thị giao diện của description.ui vào widget mới
-        loadUi("C:/TTNT_MazeGame/ui/description.ui", new_widget)
-
-        # Kết nối nút Next với hành động chuyển qua UI của level
-        btn_next = new_widget.findChild(QPushButton, "btnNext")
-        if btn_next:
-            btn_next.clicked.connect(self.change_ui_level)  # Chuyển qua UI của level
-
-        # Đặt widget mới làm widget trung tâm của QMainWindow
-        self.setCentralWidget(new_widget)
-
-    def change_ui_level(self):
-        # Tạo một widget mới từ level.ui
-        new_widget = QWidget(self)
-        loadUi("C:/TTNT_MazeGame/ui/level.ui", new_widget)
-
-        # Gắn sự kiện cho từng nút
-        btn_easy = new_widget.findChild(QPushButton, "btnEasy")
-        btn_medium = new_widget.findChild(QPushButton, "btnMedium")
-        btn_hard = new_widget.findChild(QPushButton, "btnHard")
-        btn_expert = new_widget.findChild(QPushButton, "btnExpert")
-
-        if btn_easy:
-            btn_easy.clicked.connect(lambda: self.start_game_with_level(21))
-        if btn_medium:
-            btn_medium.clicked.connect(lambda: self.start_game_with_level(31))
-        if btn_hard:
-            btn_hard.clicked.connect(lambda: self.start_game_with_level(41))
-        if btn_expert:
-            btn_expert.clicked.connect(lambda: self.start_game_with_level(51))
-
-        # Tìm nút btnBack
-        self.btnBack = new_widget.findChild(QPushButton, "btnBack")
-        self.btnBack.clicked.connect(self.change_ui_des)
-
-        self.setCentralWidget(new_widget)
-        self.update()
-
-    def handle_media_status_changed(self, status):
-        if status == QMediaPlayer.MediaStatus.EndOfMedia:
-            self.player.play()  # Phát lại nhạc khi kết thúc
-
-    def toggle_music(self):
-        if self.music_playing:
-            self.player.pause()  # Tạm dừng nhạc
-        else:
-            self.player.play()  # Phát nhạc
-        self.music_playing = not self.music_playing  # Đảo trạng thái nhạc
-
-    def start_game_with_level(self, maze_size):
-        self.maze_size = maze_size  # Lưu kích thước mê cung
-        spawn_time = 0  # Default spawn time
-
-        # Set spawn time for each level
-        if self.maze_size == 21:  # Easy level
-            spawn_time = 5000  # 5 seconds
-        elif self.maze_size == 31:  # Medium level
-            spawn_time = 4000  # 4 seconds
-        elif self.maze_size == 41:  # Hard level
-            spawn_time = 3000  # 3 seconds
-        elif self.maze_size == 51:  # Expert level
-            spawn_time = 2000  # 2 seconds
-
-        # Pass the spawn time to the maze widget
-        self.change_ui(spawn_time)  # Modify to pass spawn_time to the UI change
-
-    def change_ui(self, spawn_time):
-        # Tạo một widget mới từ main.ui
-        new_widget = QWidget(self)
-        loadUi("C:/TTNT_MazeGame/ui/main.ui", new_widget)
-
-        # Tìm mazeWidgetPlaceholder trong main.ui
-        maze_widget_placeholder = new_widget.findChild(QWidget, "mazeWidget")
-        if not maze_widget_placeholder:
-            raise RuntimeError("Widget 'mazeWidget' không tồn tại trong main.ui!")
-
-        # Tạo MazeWidget với kích thước tương ứng
-        maze_widget = MazeWidget(maze_widget_placeholder)
-        maze_widget.maze_size = self.maze_size  # Gán kích thước mê cung
-        maze_widget.create_and_draw_maze(self.maze_size)  # Tạo mê cung
-        maze_widget.setGeometry(0, 0, maze_widget_placeholder.width(), maze_widget_placeholder.height())
-        maze_widget.show()
-
-        # Pass spawn time to MazeWidget
-        maze_widget.set_dog_spawn_time(spawn_time)
-
-        # Đảm bảo widget được vẽ lại
-        self.update()
-
-        # Tìm nút btnMusic
-        self.btnMusic = new_widget.findChild(QPushButton, "btnMusic")
-        if not self.btnMusic:
-            raise RuntimeError("btnMusic không được tìm thấy trong main.ui!")
-        else:
-            self.btnMusic.clicked.connect(self.toggle_music)
-            self.btnMusic.clicked.connect(lambda: maze_widget.setFocus())
-
-        # Tìm nút btnBack
-        self.btnBack = new_widget.findChild(QPushButton, "btnBack")
-        self.btnBack.clicked.connect(self.change_ui_level)
-
-        # Tìm nút btnReNew
-        self.btnReNew = new_widget.findChild(QPushButton, "btnReNew")
-        if self.btnReNew:
-            self.btnReNew.clicked.connect(lambda: self.recreate_maze(maze_widget, spawn_time))
-            self.btnReNew.clicked.connect(lambda: maze_widget.setFocus())
-
-        self.setCentralWidget(new_widget)
-
-    
-    def recreate_maze(self, maze_widget, spawn_time):
-        if not isinstance(maze_widget, MazeWidget):
-            raise ValueError("Provided widget is not a valid MazeWidget instance.")
-        maze_widget.create_and_draw_maze(maze_widget.maze_size)
-
-        maze_widget.player_pos = [1, 0]
-
-        maze_widget.update()
-        # Cập nhật lại hướng nhân vật
-        maze_widget.current_player_image = maze_widget.player_images["right"]  # Ví dụ, hướng ban đầu là "right"
-
-        maze_widget.reset_dog_movement(spawn_time)
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = MyWindow()
-    window.show()
-    sys.exit(app.exec())
