@@ -73,6 +73,10 @@ class MazeWidget(QWidget):
             row, col = random.randint(1, self.maze_size-2), random.randint(1, self.maze_size-2)
 
         self.dog_pos = [row, col]  # Lưu vị trí con chó.
+
+        # Phát âm thanh khi con chó xuất hiện (khi spawn_dog được gọi)
+        self.appear_dog.play()
+        
         self.update()  # Vẽ lại mê cung sau khi con chó được spawn.
 
         self.update_dog_path()
@@ -200,9 +204,6 @@ class MazeWidget(QWidget):
         self.spawn_timer.setSingleShot(True)  # Chỉ chạy một lần
         self.spawn_timer.timeout.connect(self.spawn_dog)
         self.spawn_timer.start(spawn_time)  # Đặt thời gian spawn
-
-        # 5. Phát âm thanh khi con chó xuất hiện (khi spawn_dog được gọi)
-        self.appear_dog.play()
 
 
     def create_and_draw_maze(self, size):
