@@ -1,6 +1,6 @@
 import sys
 import random
-from algorithm import manhattan_distance, greedy_best_first_search, a_star
+from algorithm import greedy_best_first_search, a_star
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput, QSoundEffect
@@ -21,6 +21,8 @@ class MazeWidget(QWidget):
         self.game_over = False  # Thêm biến trạng thái game_over
         
         self.hint_path = []  # Lưu đường dẫn gợi ý
+
+        self.player_history = []  # Lịch sử vị trí người chơi
 
        # Initialize footstep sound with QMediaPlayer
         self.step_player = QMediaPlayer(self)
@@ -80,12 +82,14 @@ class MazeWidget(QWidget):
         self.setFocus()  # Đảm bảo widget nhận sự kiện bàn phím
 
     def spawn_dog(self):
-        # Lấy vị trí ngẫu nhiên trong mê cung (có thể thay đổi theo yêu cầu)
-        row, col = random.randint(1, self.maze_size-2), random.randint(1, self.maze_size-2)
-        while self.maze[row][col] != 1:  # Ensure it's not a wall
-            row, col = random.randint(1, self.maze_size-2), random.randint(1, self.maze_size-2)
-
-        self.dog_pos = [row, col]  # Lưu vị trí con chó.
+        # Lấy vị trí ngẫu nhiên trong mê cung mà người chơi đã đi qua
+        if not self.player_history:
+            # Nếu chưa có lịch sử, chọn vị trí bắt đầu mặc định
+            self.dog_pos = [1, 1]
+        else:
+            # Chọn ngẫu nhiên một vị trí từ lịch sử người chơi
+            row, col = random.choice(self.player_history)
+            self.dog_pos = [row, col]
 
         # Phát âm thanh khi con chó xuất hiện (khi spawn_dog được gọi)
         self.appear_dog.play()
@@ -158,48 +162,6 @@ class MazeWidget(QWidget):
         # Trigger the dog spawn once based on the level's spawn time
         self.spawn_timer.singleShot(self.dog_spawn_time, self.spawn_dog)
 
-    # Hàm heuristic: Tính khoảng cách Manhattan
-    def manhattan_distance(self, pos1, pos2):
-        return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
-
-    # A* tìm đường đi từ start_pos đến goal_pos
-    def a_star(self, start_pos, goal_pos):
-        open_list = PriorityQueue()
-        counter = 0  # Bộ đếm để phân biệt thứ tự các phần tử
-        open_list.put((0, counter, start_pos))
-        counter += 1
-        came_from = {}
-        g_score = {start_pos: 0}
-        f_score = {start_pos: self.manhattan_distance(start_pos, goal_pos)}
-        
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-        while not open_list.empty():
-            _, _, current = open_list.get()
-            if current == goal_pos:
-                path = []
-                while current in came_from:
-                    path.append(current)
-                    current = came_from[current]
-                path.reverse()
-                return path
-            
-            for dx, dy in directions:
-                neighbor = (current[0] + dx, current[1] + dy)
-                if 0 <= neighbor[0] < len(self.maze) and 0 <= neighbor[1] < len(self.maze[0]):
-                    if self.maze[neighbor[0]][neighbor[1]] not in (1, 2, 3):
-                        continue
-                    tentative_g_score = g_score[current] + 1
-                    if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
-                        came_from[neighbor] = current
-                        g_score[neighbor] = tentative_g_score
-                        f_score[neighbor] = tentative_g_score + self.manhattan_distance(neighbor, goal_pos)
-                        counter += 1
-                        open_list.put((f_score[neighbor], counter, neighbor))
-        
-        print("Không tìm thấy đường đi!")
-        return None
-    
     def reset_dog_movement(self, spawn_time):
         self.game_over = False  # Đặt lại trạng thái game_over khi reset
         
@@ -234,7 +196,7 @@ class MazeWidget(QWidget):
         # Khởi tạo mê cung
         maze = [[0 for _ in range(size)] for _ in range(size)]
         
-        # Gía trị 1: lối đi, 0: tường
+        # Giá trị 1: lối đi, 0: tường
         # Bao quanh mê cung bằng tường (giá trị 0)
         for i in range(size):
             maze[0][i] = 0  # Hàng trên cùng
@@ -366,6 +328,7 @@ class MazeWidget(QWidget):
         new_pos = [self.player_pos[0] + dy, self.player_pos[1] + dx]
         if self.is_valid_move(new_pos[0], new_pos[1]):
             self.player_pos = new_pos
+            self.player_history.append(tuple(self.player_pos))  # Lưu vị trí vào lịch sử
             self.update()
             
             # Play the footstep sound using QMediaPlayer
