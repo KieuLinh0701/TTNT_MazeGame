@@ -141,7 +141,7 @@ class MazeWidget(QWidget):
                     self.dog_movement_timer = QTimer(self)
                     self.dog_movement_timer.setSingleShot(True)
                     self.dog_movement_timer.timeout.connect(lambda: move_dog(path_steps, index + 1))
-                    self.dog_movement_timer.start(500)  # 500ms delay giữa các bước
+                    self.dog_movement_timer.start(1000)  # 1000ms delay giữa các bước
                 else:
                     self.dog_movement_timer = None  # Reset timer khi hoàn thành di chuyển
 
@@ -540,11 +540,11 @@ class MyWindow(QMainWindow):
         if self.maze_size == 21:  # Easy level
             spawn_time = 5000  # 5 seconds
         elif self.maze_size == 31:  # Medium level
-            spawn_time = 4000  # 4 seconds
+            spawn_time = 6000  # 6 seconds
         elif self.maze_size == 41:  # Hard level
-            spawn_time = 3000  # 3 seconds
+            spawn_time = 7000  # 7 seconds
         elif self.maze_size == 51:  # Expert level
-            spawn_time = 2000  # 2 seconds
+            spawn_time = 8000  # 8 seconds
 
         # Pass the spawn time to the maze widget
         self.change_ui(spawn_time)  # Modify to pass spawn_time to the UI change

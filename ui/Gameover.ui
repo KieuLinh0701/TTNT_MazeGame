@@ -24,10 +24,10 @@
   <widget class="QLabel" name="label_gameover_2">
    <property name="geometry">
     <rect>
-     <x>340</x>
-     <y>254</y>
-     <width>265</width>
-     <height>68</height>
+     <x>300</x>
+     <y>270</y>
+     <width>351</width>
+     <height>101</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -68,9 +68,9 @@ QLabel#title {
    <property name="geometry">
     <rect>
      <x>90</x>
-     <y>80</y>
+     <y>30</y>
      <width>764</width>
-     <height>185</height>
+     <height>301</height>
     </rect>
    </property>
    <property name="sizePolicy">
