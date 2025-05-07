@@ -487,10 +487,10 @@ class MyWindow(QMainWindow):
             self.game_over_widget = None
             
         # Xóa widget Win
-        if hasattr(self, 'win_widget') and self.win_widget:
-            self.win_widget.hide()
-            self.win_widget.deleteLater()
-            self.win_widget = None
+        if hasattr(self, 'win_game_widget') and self.win_game_widget:
+            self.win_game_widget.hide()
+            self.win_game_widget.deleteLater()
+            self.win_game_widget = None
 
         # Xóa centralWidget cũ nếu tồn tại
         if self.centralWidget():
@@ -541,10 +541,10 @@ class MyWindow(QMainWindow):
             self.game_over_widget = None
             
         # Xóa widget Win
-        if hasattr(self, 'win_widget') and self.win_widget:
-            self.win_widget.hide()
-            self.win_widget.deleteLater()
-            self.win_widget = None
+        if hasattr(self, 'win_game_widget') and self.win_game_widget:
+            self.win_game_widget.hide()
+            self.win_game_widget.deleteLater()
+            self.win_game_widget = None
 
         # Xóa centralWidget cũ nếu tồn tại
         if self.centralWidget():
@@ -671,9 +671,9 @@ class MyWindow(QMainWindow):
         
         # Căn giữa widget trên cửa sổ chính
         main_window_rect = self.contentsRect()
-        widget_rect = self.game_over_widget.contentsRect()
+        widget_rect = self.win_game_widget.contentsRect()
         widget_rect.moveCenter(main_window_rect.center())
-        self.game_over_widget.setGeometry(widget_rect)
+        self.win_game_widget.setGeometry(widget_rect)
         
         # Kết nối các nút
         btn_continue = self.win_game_widget.findChild(QPushButton, "btnContinue")
