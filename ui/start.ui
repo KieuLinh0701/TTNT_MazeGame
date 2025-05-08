@@ -37,12 +37,10 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {
-    background: qlineargradient(
-        spread:pad, 
-        x1:0, y1:0, x2:1, y2:1, 
-        stop:0 #000015, /* Xanh rất đậm */
-        stop:1 #001a3d  /* Xanh nhạt hơn một chút */
-    );
+    background-image: url('C:/Users/HP/Downloads/ChatGPT Image 15_27_05 8 thg 5, 2025.png');
+	background-repeat: no-repeat; /* Không lặp lại ảnh */
+	background-position: center; /* Căn giữa */
+	background-size: cover; /* Ảnh bao phủ toàn bộ widget */
 }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -50,9 +48,9 @@
     <property name="geometry">
      <rect>
       <x>480</x>
-      <y>80</y>
+      <y>50</y>
       <width>440</width>
-      <height>81</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -83,16 +81,16 @@ QLabel#title {
 </string>
     </property>
     <property name="text">
-     <string>Hard Way To</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:30pt;&quot;&gt;ESCAPE FROM&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>265</x>
-      <y>130</y>
-      <width>870</width>
-      <height>191</height>
+      <x>145</x>
+      <y>120</y>
+      <width>1111</width>
+      <height>211</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -123,14 +121,14 @@ QLabel#title {
 </string>
     </property>
     <property name="text">
-     <string>SCHOOL</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:96pt;&quot;&gt;THE FOREST&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
      <rect>
       <x>470</x>
-      <y>460</y>
+      <y>640</y>
       <width>201</width>
       <height>191</height>
      </rect>
@@ -149,7 +147,7 @@ QLabel#title {
     <property name="geometry">
      <rect>
       <x>670</x>
-      <y>330</y>
+      <y>510</y>
       <width>271</width>
       <height>381</height>
      </rect>
@@ -168,7 +166,7 @@ QLabel#title {
     <property name="geometry">
      <rect>
       <x>580</x>
-      <y>720</y>
+      <y>390</y>
       <width>230</width>
       <height>65</height>
      </rect>
