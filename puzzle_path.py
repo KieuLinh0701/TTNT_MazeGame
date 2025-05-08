@@ -22,8 +22,6 @@ class MazeWidget(QWidget):
         
         self.hint_path = []  # Lưu đường dẫn gợi ý
 
-        self.player_history = []  # Lịch sử vị trí người chơi
-
        # Initialize footstep sound with QMediaPlayer
         self.step_player = QMediaPlayer(self)
         step_audio_output = QAudioOutput(self)  # Create a separate QAudioOutput for step_player
@@ -83,13 +81,7 @@ class MazeWidget(QWidget):
 
     def spawn_dog(self):
         # Lấy vị trí ngẫu nhiên trong mê cung mà người chơi đã đi qua
-        if not self.player_history:
-            # Nếu chưa có lịch sử, chọn vị trí bắt đầu mặc định
-            self.dog_pos = [1, 1]
-        else:
-            # Chọn ngẫu nhiên một vị trí từ lịch sử người chơi
-            row, col = random.choice(self.player_history)
-            self.dog_pos = [row, col]
+        self.dog_pos = [1, 0]
 
         # Phát âm thanh khi con chó xuất hiện (khi spawn_dog được gọi)
         self.appear_dog.play()
@@ -328,7 +320,6 @@ class MazeWidget(QWidget):
         new_pos = [self.player_pos[0] + dy, self.player_pos[1] + dx]
         if self.is_valid_move(new_pos[0], new_pos[1]):
             self.player_pos = new_pos
-            self.player_history.append(tuple(self.player_pos))  # Lưu vị trí vào lịch sử
             self.update()
             
             # Play the footstep sound using QMediaPlayer
