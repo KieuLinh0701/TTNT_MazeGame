@@ -139,7 +139,7 @@ class MazeWidget(QWidget):
                     self.dog_movement_timer = QTimer(self)
                     self.dog_movement_timer.setSingleShot(True)
                     self.dog_movement_timer.timeout.connect(lambda: move_dog(path_steps, index + 1))
-                    self.dog_movement_timer.start(500)  # 500ms delay giữa các bước
+                    self.dog_movement_timer.start(1000)  # 1000ms delay giữa các bước
                 else:
                     self.dog_movement_timer = None  # Reset timer khi hoàn thành di chuyển
 
@@ -513,6 +513,7 @@ class MyWindow(QMainWindow):
         if self.maze_size == 21:  # Easy level
             spawn_time = 5000  # 5 seconds
         elif self.maze_size == 31:  # Medium level
+
             spawn_time = 7000  # 4 seconds
         elif self.maze_size == 41:  # Hard level
             spawn_time = 9000  # 3 seconds
