@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>969</width>
-    <height>544</height>
+    <width>726</width>
+    <height>438</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,8 +24,8 @@
   <widget class="QPushButton" name="btnNewLevel">
    <property name="geometry">
     <rect>
-     <x>380</x>
-     <y>449</y>
+     <x>270</x>
+     <y>320</y>
      <width>191</width>
      <height>54</height>
     </rect>
@@ -43,7 +43,7 @@
     border: 2px solid #00509e; /* Viền xanh sáng hơn */
     border-radius: 8px; /* Bo tròn góc nút */
     padding: 10px; /* Đệm bên trong nút */
-    font-size: 25px; /* Kích thước chữ */
+    font-size: 20px; /* Kích thước chữ */
 	font-family: bungee;
 }
 
@@ -65,10 +65,10 @@ QPushButton:pressed {
   <widget class="QLabel" name="label_gameover">
    <property name="geometry">
     <rect>
-     <x>90</x>
-     <y>30</y>
-     <width>771</width>
-     <height>281</height>
+     <x>10</x>
+     <y>10</y>
+     <width>711</width>
+     <height>261</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -81,7 +81,7 @@ QPushButton:pressed {
     <string notr="true">QLabel {
     font-family: bungee;  /* Font chữ hiện đại và dễ đọc */
     font-weight: bold;                /* Chữ đậm, làm nổi bật tiêu đề */
-    font-size: 160px;                  /* Kích thước chữ lớn để dễ đọc */
+    font-size: 100px;                  /* Kích thước chữ lớn để dễ đọc */
     color: #FFD700;                   /* Màu chữ trắng, nổi bật trên nền tối */
     text-align: center;               /* Căn giữa chữ */
     background-color: transparent;    /* Không có nền cho QLabel */
@@ -108,8 +108,8 @@ QLabel#title {
   <widget class="QPushButton" name="btnContinue">
    <property name="geometry">
     <rect>
-     <x>380</x>
-     <y>370</y>
+     <x>270</x>
+     <y>250</y>
      <width>191</width>
      <height>54</height>
     </rect>
@@ -127,7 +127,7 @@ QLabel#title {
     border: 2px solid #00509e; /* Viền xanh sáng hơn */
     border-radius: 8px; /* Bo tròn góc nút */
     padding: 10px; /* Đệm bên trong nút */
-    font-size: 25px; /* Kích thước chữ */
+    font-size: 20px; /* Kích thước chữ */
 	font-family: bungee;
 }
 
@@ -144,49 +144,6 @@ QPushButton:pressed {
    </property>
    <property name="text">
     <string>CONTINUE</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_gameover_2">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>250</y>
-     <width>421</width>
-     <height>111</height>
-    </rect>
-   </property>
-   <property name="sizePolicy">
-    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-     <horstretch>0</horstretch>
-     <verstretch>0</verstretch>
-    </sizepolicy>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QLabel {
-    font-family: bungee;  /* Font chữ hiện đại và dễ đọc */
-    font-weight: bold;                /* Chữ đậm, làm nổi bật tiêu đề */
-    font-size: 160px;                  /* Kích thước chữ lớn để dễ đọc */
-    color: #FFD700;                   /* Màu chữ trắng, nổi bật trên nền tối */
-    text-align: center;               /* Căn giữa chữ */
-    background-color: transparent;    /* Không có nền cho QLabel */
-    border: none;                     /* Không có viền */
-    padding: 20px;                    /* Đệm xung quanh chữ */
-}
-
-QLabel#title {
-    font-family: 'Verdana', sans-serif; /* Font chữ tùy chỉnh (có thể thay đổi theo sở thích) */
-    font-size: 40px;                   /* Kích thước chữ rất lớn */
-    color: #ffcc00;                    /* Màu vàng nổi bật (có thể thay đổi) */
-    font-weight: bold;                 /* Làm chữ đậm */
-    letter-spacing: 2px;               /* Tăng khoảng cách giữa các ký tự */
-}
-</string>
-   </property>
-   <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:14pt; font-weight:400; color:#ffffff;&quot;&gt;Bạn đã đến trường đúng giờ&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignCenter</set>
    </property>
   </widget>
  </widget>

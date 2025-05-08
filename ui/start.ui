@@ -37,7 +37,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {
-    background-image: url('C:/Users/HP/Downloads/ChatGPT Image 15_27_05 8 thg 5, 2025.png');
+    background-image: url('C:/TTNT_MazeGame/image/background.png');
 	background-repeat: no-repeat; /* Không lặp lại ảnh */
 	background-position: center; /* Căn giữa */
 	background-size: cover; /* Ảnh bao phủ toàn bộ widget */
@@ -103,7 +103,7 @@ QLabel#title {
      <string notr="true">QLabel {
     font-family: bungee;  /* Font chữ hiện đại và dễ đọc */
     font-weight: bold;                /* Chữ đậm, làm nổi bật tiêu đề */
-    font-size: 160px;                  /* Kích thước chữ lớn để dễ đọc */
+    font-size: 120px;                  /* Kích thước chữ lớn để dễ đọc */
     color: #FFD700;                   /* Màu chữ trắng, nổi bật trên nền tối */
     text-align: center;               /* Căn giữa chữ */
     background-color: transparent;    /* Không có nền cho QLabel */
@@ -146,10 +146,10 @@ QLabel#title {
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>670</x>
-      <y>510</y>
-      <width>271</width>
-      <height>381</height>
+      <x>540</x>
+      <y>520</y>
+      <width>291</width>
+      <height>291</height>
      </rect>
     </property>
     <property name="text">
