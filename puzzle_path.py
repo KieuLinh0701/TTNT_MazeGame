@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput, QSoundEffect
 from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen
+from PyQt6.QtGui import QColor
 from PyQt6.QtCore import Qt, QUrl, QTimer
 import os
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
@@ -21,7 +22,7 @@ class MazeWidget(QWidget):
         self.game_over = False  # Thêm biến trạng thái game_over
         
         self.hint_path = []  # Lưu đường dẫn gợi ý
-
+        
        # Initialize footstep sound with QMediaPlayer
         self.step_player = QMediaPlayer(self)
         step_audio_output = QAudioOutput(self)  # Create a separate QAudioOutput for step_player
@@ -79,8 +80,7 @@ class MazeWidget(QWidget):
         self.player_pos = [1, 0]
         self.setFocus()  # Đảm bảo widget nhận sự kiện bàn phím
 
-    def spawn_dog(self):
-        # Lấy vị trí ngẫu nhiên trong mê cung mà người chơi đã đi qua
+    def spawn_dog(self):        
         self.dog_pos = [1, 0]
 
         # Phát âm thanh khi con chó xuất hiện (khi spawn_dog được gọi)
@@ -153,7 +153,7 @@ class MazeWidget(QWidget):
         self.spawn_timer.setInterval(self.dog_spawn_time)
         # Trigger the dog spawn once based on the level's spawn time
         self.spawn_timer.singleShot(self.dog_spawn_time, self.spawn_dog)
-
+    
     def reset_dog_movement(self, spawn_time):
         self.game_over = False  # Đặt lại trạng thái game_over khi reset
         
@@ -254,7 +254,9 @@ class MazeWidget(QWidget):
                 y = row * self.cell_size
                 
                 if self.maze[row][col] == 0:  # Wall
-                    painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.wall_image)
+                    painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.wall_image)                    
+                elif self.maze[row][col] == 1:  # W
+                    painter.fillRect(x, y, self.cell_size, self.cell_size, QColor("#edb934"))
                 elif self.maze[row][col] == 2:  # Start
                     painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.start_image)
                 elif self.maze[row][col] == 3:  # End
@@ -319,7 +321,7 @@ class MazeWidget(QWidget):
     def move_player(self, dx, dy):
         new_pos = [self.player_pos[0] + dy, self.player_pos[1] + dx]
         if self.is_valid_move(new_pos[0], new_pos[1]):
-            self.player_pos = new_pos
+            self.player_pos = new_pos        
             self.update()
             
             # Play the footstep sound using QMediaPlayer
@@ -511,11 +513,12 @@ class MyWindow(QMainWindow):
         if self.maze_size == 21:  # Easy level
             spawn_time = 5000  # 5 seconds
         elif self.maze_size == 31:  # Medium level
-            spawn_time = 6000  # 6 seconds
+
+            spawn_time = 7000  # 4 seconds
         elif self.maze_size == 41:  # Hard level
-            spawn_time = 7000  # 7 seconds
+            spawn_time = 9000  # 3 seconds
         elif self.maze_size == 51:  # Expert level
-            spawn_time = 8000  # 8 seconds
+            spawn_time = 11000  # 2 seconds
 
         # Pass the spawn time to the maze widget
         self.change_ui(spawn_time)  # Modify to pass spawn_time to the UI change
@@ -575,8 +578,9 @@ class MyWindow(QMainWindow):
         
         maze_widget.create_and_draw_maze(maze_widget.maze_size)
 
+        # Đặt lại vị trí người chơi
         maze_widget.player_pos = [1, 0]
-        
+            
         # Xóa đường dẫn gợi ý
         maze_widget.hint_path = []  # Xóa hint_path
         if hasattr(self, 'btnHint') and self.btnHint:
