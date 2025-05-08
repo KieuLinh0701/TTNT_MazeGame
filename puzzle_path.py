@@ -1,6 +1,6 @@
 import sys
 import random
-from queue import PriorityQueue
+from algorithm import greedy_best_first_search, a_star
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput, QSoundEffect
@@ -19,6 +19,10 @@ class MazeWidget(QWidget):
         self.dog_spawn_time = 5000  # Example time
         
         self.game_over = False  # Thêm biến trạng thái game_over
+        
+        self.hint_path = []  # Lưu đường dẫn gợi ý
+
+        self.player_history = []  # Lịch sử vị trí người chơi
 
        # Initialize footstep sound with QMediaPlayer
         self.step_player = QMediaPlayer(self)
@@ -78,12 +82,14 @@ class MazeWidget(QWidget):
         self.setFocus()  # Đảm bảo widget nhận sự kiện bàn phím
 
     def spawn_dog(self):
-        # Lấy vị trí ngẫu nhiên trong mê cung (có thể thay đổi theo yêu cầu)
-        row, col = random.randint(1, self.maze_size-2), random.randint(1, self.maze_size-2)
-        while self.maze[row][col] != 1:  # Ensure it's not a wall
-            row, col = random.randint(1, self.maze_size-2), random.randint(1, self.maze_size-2)
-
-        self.dog_pos = [row, col]  # Lưu vị trí con chó.
+        # Lấy vị trí ngẫu nhiên trong mê cung mà người chơi đã đi qua
+        if not self.player_history:
+            # Nếu chưa có lịch sử, chọn vị trí bắt đầu mặc định
+            self.dog_pos = [1, 1]
+        else:
+            # Chọn ngẫu nhiên một vị trí từ lịch sử người chơi
+            row, col = random.choice(self.player_history)
+            self.dog_pos = [row, col]
 
         # Phát âm thanh khi con chó xuất hiện (khi spawn_dog được gọi)
         self.appear_dog.play()
@@ -103,7 +109,7 @@ class MazeWidget(QWidget):
         player_goal = self.player_pos
         start = (row, col)
         goal = (player_goal[0], player_goal[1])
-        path = self.a_star(start, goal)
+        path = a_star(self.maze, self.maze_size, start, goal)
 
         if path:
             # Dừng tiến trình di chuyển cũ nếu đang chạy
@@ -147,25 +153,8 @@ class MazeWidget(QWidget):
 
             # Bắt đầu di chuyển con chó qua từng bước
             move_dog(path)
-
         else:
             print("No path available for the dog.")
-
-    def gameOver(self):
-        self.game_over = True  # Đặt trạng thái game_over
-        if self.dog_movement_timer:
-            self.dog_movement_timer.stop()
-            self.dog_movement_timer.deleteLater()
-            self.dog_movement_timer = None
-        if self.spawn_timer:
-            self.spawn_timer.stop()
-            self.spawn_timer.deleteLater()
-            self.spawn_timer = None    
-            
-        # Gọi hàm hiển thị Game Over từ MyWindow
-        main_window = self.window()  # Lấy QMainWindow (MyWindow)
-        if isinstance(main_window, MyWindow):
-            main_window.show_game_over()
 
     def set_dog_spawn_time(self, time):
         self.dog_spawn_time = time
@@ -173,48 +162,6 @@ class MazeWidget(QWidget):
         # Trigger the dog spawn once based on the level's spawn time
         self.spawn_timer.singleShot(self.dog_spawn_time, self.spawn_dog)
 
-    # Hàm heuristic: Tính khoảng cách Manhattan
-    def manhattan_distance(self, pos1, pos2):
-        return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
-
-    # A* tìm đường đi từ start_pos đến goal_pos
-    def a_star(self, start_pos, goal_pos):
-        open_list = PriorityQueue()
-        counter = 0  # Bộ đếm để phân biệt thứ tự các phần tử
-        open_list.put((0, counter, start_pos))
-        counter += 1
-        came_from = {}
-        g_score = {start_pos: 0}
-        f_score = {start_pos: self.manhattan_distance(start_pos, goal_pos)}
-        
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-        while not open_list.empty():
-            _, _, current = open_list.get()
-            if current == goal_pos:
-                path = []
-                while current in came_from:
-                    path.append(current)
-                    current = came_from[current]
-                path.reverse()
-                return path
-            
-            for dx, dy in directions:
-                neighbor = (current[0] + dx, current[1] + dy)
-                if 0 <= neighbor[0] < len(self.maze) and 0 <= neighbor[1] < len(self.maze[0]):
-                    if self.maze[neighbor[0]][neighbor[1]] not in (1, 2, 3):
-                        continue
-                    tentative_g_score = g_score[current] + 1
-                    if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
-                        came_from[neighbor] = current
-                        g_score[neighbor] = tentative_g_score
-                        f_score[neighbor] = tentative_g_score + self.manhattan_distance(neighbor, goal_pos)
-                        counter += 1
-                        open_list.put((f_score[neighbor], counter, neighbor))
-        
-        print("Không tìm thấy đường đi!")
-        return None
-    
     def reset_dog_movement(self, spawn_time):
         self.game_over = False  # Đặt lại trạng thái game_over khi reset
         
@@ -241,7 +188,6 @@ class MazeWidget(QWidget):
         self.spawn_timer.timeout.connect(self.spawn_dog)
         self.spawn_timer.start(spawn_time)  # Đặt thời gian spawn
 
-
     def create_and_draw_maze(self, size):
         self.maze = self.generate_maze(size)
         self.update()  # Gọi lại paintEvent để vẽ mê cung
@@ -250,7 +196,7 @@ class MazeWidget(QWidget):
         # Khởi tạo mê cung
         maze = [[0 for _ in range(size)] for _ in range(size)]
         
-        # Gía trị 1: lối đi, 0: tường
+        # Giá trị 1: lối đi, 0: tường
         # Bao quanh mê cung bằng tường (giá trị 0)
         for i in range(size):
             maze[0][i] = 0  # Hàng trên cùng
@@ -322,6 +268,18 @@ class MazeWidget(QWidget):
                 elif self.maze[row][col] == 3:  # End
                     painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.goal_image)
 
+        # Vẽ đường dẫn gợi ý (nếu có)
+        if self.hint_path:
+            painter.setPen(QPen(Qt.GlobalColor.yellow, 5, Qt.PenStyle.SolidLine))
+            for i in range(len(self.hint_path) - 1):
+                start_pos = self.hint_path[i]
+                end_pos = self.hint_path[i + 1]
+                start_x = start_pos[1] * self.cell_size + self.cell_size // 2
+                start_y = start_pos[0] * self.cell_size + self.cell_size // 2
+                end_x = end_pos[1] * self.cell_size + self.cell_size // 2
+                end_y = end_pos[0] * self.cell_size + self.cell_size // 2
+                painter.drawLine(start_x, start_y, end_x, end_y)
+        
         # Vẽ người chơi
         scaled_image = self.current_player_image.scaled(
             self.cell_size, self.cell_size,
@@ -370,6 +328,7 @@ class MazeWidget(QWidget):
         new_pos = [self.player_pos[0] + dy, self.player_pos[1] + dx]
         if self.is_valid_move(new_pos[0], new_pos[1]):
             self.player_pos = new_pos
+            self.player_history.append(tuple(self.player_pos))  # Lưu vị trí vào lịch sử
             self.update()
             
             # Play the footstep sound using QMediaPlayer
@@ -383,6 +342,27 @@ class MazeWidget(QWidget):
         if row < 0 or col < 0 or row >= len(self.maze) or col >= len(self.maze[row]):
             return False
         return self.maze[row][col] in (1, 2, 3)
+    
+    def toggle_hint(self, checked):
+        if checked and not self.game_over:
+            # Tính đường dẫn gợi ý từ player_pos đến đích
+            start = tuple(self.player_pos)
+            goal = None
+            # Tìm vị trí đích
+            for row in range(self.maze_size):
+                for col in range(self.maze_size):
+                    if self.maze[row][col] == 3:  # Đích
+                        goal = (row, col)
+                        break
+                if goal:
+                    break
+            if goal:
+                self.hint_path = greedy_best_first_search(self.maze, self.maze_size, start, goal)
+            else:
+                self.hint_path = []  # Không tìm thấy đích
+        else:
+            self.hint_path = []  # Xóa đường dẫn gợi ý khi tắt
+        self.update()  # Vẽ lại để hiển thị/xóa gợi ý
     
     def gameOver(self):
         self.game_over = True  # Đặt trạng thái game_over
@@ -470,10 +450,10 @@ class MyWindow(QMainWindow):
             self.game_over_widget = None
             
         # Xóa widget Win
-        if hasattr(self, 'win_widget') and self.win_widget:
-            self.win_widget.hide()
-            self.win_widget.deleteLater()
-            self.win_widget = None
+        if hasattr(self, 'win_game_widget') and self.win_game_widget:
+            self.win_game_widget.hide()
+            self.win_game_widget.deleteLater()
+            self.win_game_widget = None
 
         # Xóa centralWidget cũ nếu tồn tại
         if self.centralWidget():
@@ -524,10 +504,10 @@ class MyWindow(QMainWindow):
             self.game_over_widget = None
             
         # Xóa widget Win
-        if hasattr(self, 'win_widget') and self.win_widget:
-            self.win_widget.hide()
-            self.win_widget.deleteLater()
-            self.win_widget = None
+        if hasattr(self, 'win_game_widget') and self.win_game_widget:
+            self.win_game_widget.hide()
+            self.win_game_widget.deleteLater()
+            self.win_game_widget = None
 
         # Xóa centralWidget cũ nếu tồn tại
         if self.centralWidget():
@@ -589,15 +569,27 @@ class MyWindow(QMainWindow):
         if self.btnReNew:
             self.btnReNew.clicked.connect(lambda: self.recreate_maze(maze_widget, spawn_time))
             self.btnReNew.clicked.connect(lambda: maze_widget.setFocus())
+            
+        # Tìm nút btnHint
+        self.btnHint = new_widget.findChild(QPushButton, "btnHint")
+        if self.btnHint:
+            self.btnHint.clicked.connect(lambda checked: maze_widget.toggle_hint(checked))
+            self.btnHint.clicked.connect(lambda: maze_widget.setFocus())
 
         self.setCentralWidget(new_widget)
     
     def recreate_maze(self, maze_widget, spawn_time):
         if not isinstance(maze_widget, MazeWidget):
             raise ValueError("Provided widget is not a valid MazeWidget instance.")
+        
         maze_widget.create_and_draw_maze(maze_widget.maze_size)
 
         maze_widget.player_pos = [1, 0]
+        
+        # Xóa đường dẫn gợi ý
+        maze_widget.hint_path = []  # Xóa hint_path
+        if hasattr(self, 'btnHint') and self.btnHint:
+            self.btnHint.setChecked(False)  # Tắt nút btnHint
 
         maze_widget.update()
         # Cập nhật lại hướng nhân vật
@@ -629,6 +621,8 @@ class MyWindow(QMainWindow):
             self.btnMusic.setEnabled(False)
         if hasattr(self, 'btnBack'):
             self.btnBack.setEnabled(False)
+        if hasattr(self, 'btnHint'):
+            self.btnHint.setEnabled(False)
         if hasattr(self, 'btnReNew'):
             self.btnReNew.setEnabled(False)
         
@@ -640,9 +634,9 @@ class MyWindow(QMainWindow):
         
         # Căn giữa widget trên cửa sổ chính
         main_window_rect = self.contentsRect()
-        widget_rect = self.game_over_widget.contentsRect()
+        widget_rect = self.win_game_widget.contentsRect()
         widget_rect.moveCenter(main_window_rect.center())
-        self.game_over_widget.setGeometry(widget_rect)
+        self.win_game_widget.setGeometry(widget_rect)
         
         # Kết nối các nút
         btn_continue = self.win_game_widget.findChild(QPushButton, "btnContinue")
@@ -658,6 +652,8 @@ class MyWindow(QMainWindow):
             self.btnMusic.setEnabled(False)
         if hasattr(self, 'btnBack'):
             self.btnBack.setEnabled(False)
+        if hasattr(self, 'btnHint'):
+            self.btnHint.setEnabled(False)
         if hasattr(self, 'btnReNew'):
             self.btnReNew.setEnabled(False)
         
