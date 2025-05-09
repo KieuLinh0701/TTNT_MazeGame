@@ -1,4 +1,5 @@
 from heapq import heappush, heappop
+import random
 from queue import PriorityQueue
 
 def manhattan_distance(pos1, pos2):
@@ -75,3 +76,88 @@ def a_star(maze, maze_size, start_pos, goal_pos):
     
     print("Không tìm thấy đường đi!")
     return None
+
+def q_learning(maze, maze_size, start, goal, episodes = 1000):
+    q_table = {}
+    learning_rate = 0.1
+    discount_factor = 0.9
+    epsilon = 0.1
+    actions = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+
+    def is_valid_move(pos):
+        row, col = pos
+        if row < 0 or col < 0 or row >= maze_size or col >= maze_size:
+            return False
+        return maze[row][col] in (1, 2, 3)
+    
+    def get_reward(pos):
+        row, col = pos
+        if row < 0 or col < 0 or row >= maze_size or col >= maze_size:
+            return -10
+        if maze[row][col] == 0:
+            return -10
+        if maze[row][col] == 3:
+            return 100
+        return -1
+    # Huấn luyện Q-table qua nhiều episode
+    for episode in range(episodes):
+        current_pos = start
+        epsilon = max(0.01, epsilon * 0.995)  # Giảm epsilon theo thời gian
+
+        while current_pos != goal:
+            current_state = current_pos
+            if current_state not in q_table:
+                q_table[current_state] = {a: 0 for a in actions}
+
+            # Chọn hành động (epsilon-greedy)
+            if random.random() < epsilon:
+                action = random.choice(actions)
+            else:
+                action = max(q_table[current_state], key=q_table[current_state].get)
+            # Trong quá trình học, policy này thay đổi dần theo q-table nên không cố định
+
+            # Thực hiện hành động
+            dx, dy = action
+            next_pos = (current_pos[0] + dy, current_pos[1] + dx)
+            reward = get_reward(next_pos)
+
+            # Cập nhật Q-table
+            next_state = next_pos if is_valid_move(next_pos) else current_pos
+            if next_state not in q_table:
+                q_table[next_state] = {a: 0 for a in actions}
+            
+            current_q = q_table[current_state][action]
+            max_next_q = max(q_table[next_state].values())
+            new_q = current_q + learning_rate * (
+                reward + discount_factor * max_next_q - current_q
+            )
+            q_table[current_state][action] = new_q
+
+            # Di chuyển đến trạng thái tiếp theo nếu hợp lệ
+            if is_valid_move(next_pos):
+                current_pos = next_pos
+
+            # Thoát nếu đến đích
+            if current_pos == goal:
+                break
+    # Tái tạo đường đi sử dụng Q-table
+    path = [start]
+    current_pos = start
+    visited = set([start])
+    max_steps = maze_size * maze_size  # Giới hạn bước để tránh vòng lặp vô hạn
+
+    while current_pos != goal and len(path) < max_steps:
+        if current_pos not in q_table:
+            return []  # Không tìm thấy đường đi
+        action = max(q_table[current_pos], key=q_table[current_pos].get) #ở đây là policy, chọn hành động có q-value cao nhất
+        dx, dy = action
+        next_pos = (current_pos[0] + dy, current_pos[1] + dx)
+        if not is_valid_move(next_pos) or next_pos in visited:
+            return []  # Không tìm thấy đường đi
+        path.append(next_pos)
+        visited.add(next_pos)
+        current_pos = next_pos
+
+    if current_pos == goal:
+        return path
+    return []  # Không tìm thấy đường đi
