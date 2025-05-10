@@ -6,43 +6,42 @@ def manhattan_distance(pos1, pos2):
     """Tính khoảng cách Manhattan giữa hai điểm."""
     return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
-def greedy_best_first_search(maze, maze_size, start, goal):
-    """Tìm đường từ start đến goal bằng Greedy Best-First Search."""
-    frontier = []
-    heappush(frontier, (manhattan_distance(start, goal), start))
-    came_from = {start: None}
-    visited = set()
+def dfs(maze, maze_size, start_pos, goal_pos):
+    """Tìm đường từ start_pos đến goal_pos bằng thuật toán DFS."""
+    stack = [start_pos]  # Sử dụng stack thay cho open_list
+    came_from = {}  # Lưu lại đường đi
+    visited = set()  # Theo dõi các ô đã thăm
 
-    while frontier:
-        _, current = heappop(frontier)
-        if current == goal:
-            # Tái tạo đường dẫn
-            path = []
-            while current is not None:
-                path.append(current)
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Các hướng di chuyển
+
+    while stack:
+        current = stack.pop()  # Lấy ra phần tử cuối cùng trong stack
+        if current == goal_pos:
+            path = [current]
+            while current in came_from:
                 current = came_from[current]
-            return path[::-1]  # Đảo ngược đường dẫn
+                path.append(current)
+            path.reverse()
+            return path
 
-        visited.add(current)
-        row, col = current
+        if current in visited:
+            continue
+        visited.add(current)  # Đánh dấu ô đã thăm
 
-        # Kiểm tra các láng giềng (lên, xuống, trái, phải)
-        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            next_row, next_col = row + dr, col + dc
-            next_pos = (next_row, next_col)
-            if (0 <= next_row < maze_size and
-                0 <= next_col < maze_size and
-                next_pos not in visited and
-                maze[next_row][next_col] in (1, 3)):  # Đường đi hoặc đích
-                heappush(frontier, (manhattan_distance(next_pos, goal), next_pos))
-                came_from[next_pos] = current
+        for dx, dy in directions:
+            neighbor = (current[0] + dx, current[1] + dy)
+            if 0 <= neighbor[0] < maze_size and 0 <= neighbor[1] < maze_size:
+                if maze[neighbor[0]][neighbor[1]] in (1, 2, 3):  # Chỉ di chuyển vào ô có lối đi
+                    if neighbor not in visited:
+                        came_from[neighbor] = current
+                        stack.append(neighbor)  # Thêm hàng xóm vào stack để duyệt sau
 
-    return []  # Không tìm thấy đường dẫn
+    print("Không tìm thấy đường đi!")
+    return None
 
 def a_star(maze, maze_size, start_pos, goal_pos):
-    """Tìm đường từ start_pos đến goal_pos bằng thuật toán A*."""
     open_list = PriorityQueue()
-    counter = 0  # Bộ đếm để phân biệt thứ tự các phần tử
+    counter = 0
     open_list.put((0, counter, start_pos))
     counter += 1
     came_from = {}
@@ -54,10 +53,10 @@ def a_star(maze, maze_size, start_pos, goal_pos):
     while not open_list.empty():
         _, _, current = open_list.get()
         if current == goal_pos:
-            path = []
+            path = [current]
             while current in came_from:
-                path.append(current)
                 current = came_from[current]
+                path.append(current)
             path.reverse()
             return path
         

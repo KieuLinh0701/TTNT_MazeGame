@@ -1,19 +1,21 @@
 import sys
 import random
-from algorithm import greedy_best_first_search, a_star
+from algorithm import a_star, q_learning, dfs
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
 from PyQt6.uic import loadUi
-from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput, QSoundEffect
-from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen
-from PyQt6.QtGui import QColor
-from PyQt6.QtCore import Qt, QUrl, QTimer
+from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
+from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen, QColor
+from PyQt6.QtCore import Qt, QUrl, QTimer, QCoreApplication, QThread
+
 import os
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
 
 class MazeWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        
+
+        self.current_algorithm = None
+        self.auto_solving = False  # Trạng thái tự động giải
         self.game_over = False  # Thêm biến trạng thái game_over
         
        # Initialize footstep sound with QMediaPlayer
@@ -54,7 +56,10 @@ class MazeWidget(QWidget):
         # Tạo mê cung và đặt vị trí người chơi
         self.create_and_draw_maze(self.maze_size)
         self.player_pos = [1, 0]
-        self.setFocus()  # Đảm bảo widget nhận sự kiện bàn phím
+        
+        # Gọi auto_solve ngay sau khi mê cung được tạo
+        QTimer.singleShot(500, self.auto_solve)  # Gọi sau 500ms để đảm bảo giao diện được load
+        self.setFocus()
 
     def create_and_draw_maze(self, size):
         self.maze = self.generate_maze(size)
@@ -147,52 +152,78 @@ class MazeWidget(QWidget):
         player_y = self.player_pos[0] * self.cell_size + (self.cell_size - scaled_image.height()) // 2
         painter.drawImage(player_x, player_y, scaled_image)
 
-    def keyPressEvent(self, event):
-        if self.game_over:  # Không xử lý phím nếu trò chơi đã kết thúc
+    def auto_solve(self):
+        self.auto_solving = True  # Bắt đầu tự động giải
+        start = tuple(self.player_pos)
+        goal = None
+        
+        # Tìm vị trí đích (3)
+        for row in range(self.maze_size):
+            for col in range(self.maze_size):
+                if self.maze[row][col] == 3:
+                    goal = (row, col)
+                    break
+            if goal:
+                break
+        
+        if not goal:
+            print("Không tìm thấy đích.")
             return
         
-        if event.key() == Qt.Key.Key_Up:
-            self.current_player_image = self.player_images["up"]
-            self.move_player(0, -1)
-        elif event.key() == Qt.Key.Key_Down:
-            self.current_player_image = self.player_images["down"]
-            self.move_player(0, 1)
-        elif event.key() == Qt.Key.Key_Left:
-            self.current_player_image = self.player_images["left"]
-            self.move_player(-1, 0)
-        elif event.key() == Qt.Key.Key_Right:
-            self.current_player_image = self.player_images["right"]
-            self.move_player(1, 0)
-    
-    def move_player(self, dx, dy):
-        new_pos = [self.player_pos[0] + dy, self.player_pos[1] + dx]
-        if self.is_valid_move(new_pos[0], new_pos[1]):
-            self.player_pos = new_pos        
-            self.update()
-            
-            # Play the footstep sound using QMediaPlayer
-            self.step_player.play()
-            
-            # Kiểm tra xem người chơi có đến đích không
-            if self.maze[self.player_pos[0]][self.player_pos[1]] == 3:
-                self.win_game()
+        path = self.current_algorithm(self.maze, self.maze_size, start, goal)
+        if not path:
+            print("Không có đường đi đến đích.")
+            return
+        
+        # Di chuyển người chơi theo đường đi
+        self.move_player_along_path(path)
 
-    def is_valid_move(self, row, col):
-        if row < 0 or col < 0 or row >= len(self.maze) or col >= len(self.maze[row]):
-            return False
-        return self.maze[row][col] in (1, 2, 3)
-    
-    def gameOver(self):
-        self.game_over = True  # Đặt trạng thái game_over
-            
-        # Phát âm thanh thắng
-        self.lose_sound.play() 
-            
-        # Gọi hàm hiển thị Game Over từ MyWindow
-        main_window = self.window()  # Lấy QMainWindow (MyWindow)
-        if isinstance(main_window, MyWindow):
-            main_window.show_game_over()
-    
+    def move_player_along_path(self, path):
+        # Di chuyển người chơi từng bước trên đường đi
+        for i in range(len(path) - 1):
+            if not self.auto_solving:  # Kiểm tra trạng thái dừng
+                return
+
+            current_pos = path[i]
+            next_pos = path[i + 1]
+
+            # Xác định hướng di chuyển
+            dx = next_pos[1] - current_pos[1]  # Sự thay đổi theo cột (x)
+            dy = next_pos[0] - current_pos[0]  # Sự thay đổi theo hàng (y)
+
+            if dx == 1:  # Di chuyển sang phải
+                self.current_player_image = self.player_images["right"]
+            elif dx == -1:  # Di chuyển sang trái
+                self.current_player_image = self.player_images["left"]
+            elif dy == 1:  # Di chuyển xuống
+                self.current_player_image = self.player_images["down"]
+            elif dy == -1:  # Di chuyển lên
+                self.current_player_image = self.player_images["up"]
+
+            # Cập nhật vị trí người chơi
+            self.player_pos = list(next_pos)
+
+            self.step_player.play()
+
+            # Vẽ lại giao diện
+            self.update()
+            QCoreApplication.processEvents()  # Cập nhật giao diện
+
+            # Nghỉ giữa các bước
+            QThread.msleep(300)  # 200ms giữa mỗi bước di chuyển
+
+        # Đảm bảo người chơi đứng ở vị trí cuối cùng (đích)
+        self.player_pos = list(path[-1])
+        self.update()  # Vẽ lại lần cuối
+        self.win_game()
+
+
+    def stop_auto_solve(self):
+        self.auto_solving = False  # Dừng tự động giải
+
+    def set_algorithm(self, algorithm_name):
+        self.current_algorithm = algorithm_name
+
     def win_game(self):
         self.game_over = True  # Ngăn người chơi di chuyển
             
@@ -231,11 +262,6 @@ class MyWindow(QMainWindow):
         audio_output.setVolume(0.3)  # Adjust volume (value from 0.0 to 1.0)
 
     def change_ui_level(self):
-        # Xóa widget Game Over nếu tồn tại
-        if hasattr(self, 'game_over_widget') and self.game_over_widget:
-            self.game_over_widget.hide()
-            self.game_over_widget.deleteLater()
-            self.game_over_widget = None
             
         # Xóa widget Win
         if hasattr(self, 'win_game_widget') and self.win_game_widget:
@@ -258,13 +284,47 @@ class MyWindow(QMainWindow):
         btn_expert = new_widget.findChild(QPushButton, "btnExpert")
 
         if btn_easy:
-            btn_easy.clicked.connect(lambda: self.start_game_with_level(21))
+            btn_easy.clicked.connect(lambda: self.change_ui_algorithm(21))
         if btn_medium:
-            btn_medium.clicked.connect(lambda: self.start_game_with_level(31))
+            btn_medium.clicked.connect(lambda: self.change_ui_algorithm(31))
         if btn_hard:
-            btn_hard.clicked.connect(lambda: self.start_game_with_level(41))
+            btn_hard.clicked.connect(lambda: self.change_ui_algorithm(41))
         if btn_expert:
-            btn_expert.clicked.connect(lambda: self.start_game_with_level(51))
+            btn_expert.clicked.connect(lambda: self.change_ui_algorithm(51))
+
+        self.setCentralWidget(new_widget)
+        self.update()
+
+    def change_ui_algorithm(self, size):  
+        # Xóa widget Win
+        if hasattr(self, 'win_game_widget') and self.win_game_widget:
+            self.win_game_widget.hide()
+            self.win_game_widget.deleteLater()
+            self.win_game_widget = None
+
+        # Xóa centralWidget cũ nếu tồn tại
+        if self.centralWidget():
+            self.centralWidget().deleteLater()
+        
+        # Tạo một widget mới từ level.ui
+        new_widget = QWidget(self)
+        loadUi("ui\\algorithm.ui", new_widget)
+
+        # Gắn sự kiện cho từng nút
+        btn_Dfs = new_widget.findChild(QPushButton, "btnDfs")
+        btn_AStar = new_widget.findChild(QPushButton, "btnAStar")
+        btn_QLearning = new_widget.findChild(QPushButton, "btnQLearning")
+
+        if btn_Dfs:
+            btn_Dfs.clicked.connect(lambda: self.start_game_with_level(size, dfs))
+        if btn_AStar:
+            btn_AStar.clicked.connect(lambda: self.start_game_with_level(size, a_star))
+        if btn_QLearning:
+            btn_QLearning.clicked.connect(lambda: self.start_game_with_level(size, q_learning))
+
+        # Tìm nút btnBack
+        self.btnBack = new_widget.findChild(QPushButton, "btnBack")
+        self.btnBack.clicked.connect(self.change_ui_level)
 
         self.setCentralWidget(new_widget)
         self.update()
@@ -280,13 +340,7 @@ class MyWindow(QMainWindow):
             self.player.play()  # Phát nhạc
         self.music_playing = not self.music_playing  # Đảo trạng thái nhạc
 
-    def start_game_with_level(self, maze_size):
-        # Xóa widget Game Over nếu tồn tại
-        if hasattr(self, 'game_over_widget') and self.game_over_widget:
-            self.game_over_widget.hide()
-            self.game_over_widget.deleteLater()
-            self.game_over_widget = None
-            
+    def start_game_with_level(self, maze_size, algorithm):
         # Xóa widget Win
         if hasattr(self, 'win_game_widget') and self.win_game_widget:
             self.win_game_widget.hide()
@@ -298,7 +352,8 @@ class MyWindow(QMainWindow):
             self.centralWidget().deleteLater()
             
         self.maze_size = maze_size  # Lưu kích thước mê cung
-
+        self.algorithm = algorithm
+        
         # Pass the spawn time to the maze widget
         self.change_ui()  # Modify to pass spawn_time to the UI change
 
@@ -315,6 +370,7 @@ class MyWindow(QMainWindow):
         # Tạo MazeWidget với kích thước tương ứng
         maze_widget = MazeWidget(maze_widget_placeholder)
         maze_widget.maze_size = self.maze_size  # Gán kích thước mê cung
+        maze_widget.current_algorithm = self.algorithm
         maze_widget.create_and_draw_maze(self.maze_size)  # Tạo mê cung
         maze_widget.setGeometry(0, 0, maze_widget_placeholder.width(), maze_widget_placeholder.height())
         maze_widget.show()
@@ -333,6 +389,7 @@ class MyWindow(QMainWindow):
         # Tìm nút btnBack
         self.btnBack = new_widget.findChild(QPushButton, "btnBack")
         self.btnBack.clicked.connect(self.change_ui_level)
+        self.btnBack.clicked.connect(maze_widget.stop_auto_solve)
 
         # Tìm nút btnReNew
         self.btnReNew = new_widget.findChild(QPushButton, "btnReNew")
@@ -350,46 +407,14 @@ class MyWindow(QMainWindow):
 
         # Đặt lại vị trí người chơi
         maze_widget.player_pos = [1, 0]
-            
-        # Xóa đường dẫn gợi ý
-        maze_widget.hint_path = []  # Xóa hint_path
-        if hasattr(self, 'btnHint') and self.btnHint:
-            self.btnHint.setChecked(False)  # Tắt nút btnHint
+        # Gọi auto_solve ngay sau khi mê cung được tạo
+        maze_widget.stop_auto_solve()
+        QTimer.singleShot(500, maze_widget.auto_solve)  # Gọi sau 500ms để đảm bảo giao diện được load
+        self.setFocus()
 
         maze_widget.update()
         # Cập nhật lại hướng nhân vật
         maze_widget.current_player_image = maze_widget.player_images["right"]  # Ví dụ, hướng ban đầu là "right"
-        
-    def show_game_over(self):
-        self.game_over_widget = QWidget(self)
-        loadUi("ui\\Gameover.ui", self.game_over_widget)
-        
-        # Căn giữa widget trên cửa sổ chính
-        main_window_rect = self.contentsRect()
-        widget_rect = self.game_over_widget.contentsRect()
-        widget_rect.moveCenter(main_window_rect.center())
-        self.game_over_widget.setGeometry(widget_rect)
-        
-        # Kết nối các nút
-        btn_continue = self.game_over_widget.findChild(QPushButton, "btnContinue")
-        btn_new_level = self.game_over_widget.findChild(QPushButton, "btnNewLevel")
-
-        if btn_continue:
-            btn_continue.clicked.connect(lambda: self.start_game_with_level(self.maze_size))
-        if btn_new_level:
-            btn_new_level.clicked.connect(self.change_ui_level)
-            
-        # Vô hiệu hóa các nút bên dưới
-        if hasattr(self, 'btnMusic'):
-            self.btnMusic.setEnabled(False)
-        if hasattr(self, 'btnBack'):
-            self.btnBack.setEnabled(False)
-        if hasattr(self, 'btnHint'):
-            self.btnHint.setEnabled(False)
-        if hasattr(self, 'btnReNew'):
-            self.btnReNew.setEnabled(False)
-        
-        self.game_over_widget.show()
         
     def show_win_game(self):
         self.win_game_widget = QWidget(self)
@@ -404,19 +429,20 @@ class MyWindow(QMainWindow):
         # Kết nối các nút
         btn_continue = self.win_game_widget.findChild(QPushButton, "btnContinue")
         btn_new_level = self.win_game_widget.findChild(QPushButton, "btnNewLevel")
+        btn_new_algorithm = self.win_game_widget.findChild(QPushButton, "btnNewAlgorithm")
 
         if btn_continue:
-            btn_continue.clicked.connect(lambda: self.start_game_with_level(self.maze_size))
+            btn_continue.clicked.connect(lambda: self.start_game_with_level(self.maze_size, self.algorithm))
         if btn_new_level:
             btn_new_level.clicked.connect(self.change_ui_level)
+        if btn_new_algorithm:
+           btn_new_algorithm.clicked.connect(lambda: self.change_ui_algorithm(self.maze_size))
             
         # Vô hiệu hóa các nút bên dưới
         if hasattr(self, 'btnMusic'):
             self.btnMusic.setEnabled(False)
         if hasattr(self, 'btnBack'):
             self.btnBack.setEnabled(False)
-        if hasattr(self, 'btnHint'):
-            self.btnHint.setEnabled(False)
         if hasattr(self, 'btnReNew'):
             self.btnReNew.setEnabled(False)
         

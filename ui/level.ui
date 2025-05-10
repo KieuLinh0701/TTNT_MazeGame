@@ -20,7 +20,7 @@
    <property name="geometry">
     <rect>
      <x>570</x>
-     <y>170</y>
+     <y>260</y>
      <width>251</width>
      <height>81</height>
     </rect>
@@ -45,7 +45,7 @@
    <property name="geometry">
     <rect>
      <x>560</x>
-     <y>280</y>
+     <y>370</y>
      <width>270</width>
      <height>70</height>
     </rect>
@@ -77,7 +77,7 @@ QPushButton:pressed {
    <property name="geometry">
     <rect>
      <x>560</x>
-     <y>380</y>
+     <y>470</y>
      <width>270</width>
      <height>70</height>
     </rect>
@@ -105,43 +105,11 @@ QPushButton:pressed {
     <string>MEDIUM</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btnExpert">
-   <property name="geometry">
-    <rect>
-     <x>560</x>
-     <y>580</y>
-     <width>270</width>
-     <height>70</height>
-    </rect>
-   </property>
-   <property name="styleSheet">
-    <string notr="true">QPushButton {
-    background-color: #9C27B0; /* Màu tím */
-    border-color: #7B1FA2; /* Viền tím đậm */
-    border-radius: 25px;           /* Bo góc tròn */
-    color: #ffffff;                /* Màu chữ trắng */
-    font-family: bungee; /* Font chữ gọn gàng */
-    font-size: 20px;               /* Kích thước chữ */
-}
-
-QPushButton:hover {
-    border-color: white; /* Đổi viền sang trắng khi hover */
-    background-color: rgba(255, 255, 255, 0.1); /* Thêm hiệu ứng sáng */
-}
-
-QPushButton:pressed {
-    background-color: rgba(255, 255, 255, 0.2); /* Hiệu ứng nhấn */
-}</string>
-   </property>
-   <property name="text">
-    <string>EXPERT</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="btnHard">
    <property name="geometry">
     <rect>
      <x>560</x>
-     <y>480</y>
+     <y>570</y>
      <width>270</width>
      <height>70</height>
     </rect>
@@ -172,8 +140,8 @@ QPushButton:pressed {
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>110</x>
-     <y>280</y>
+     <x>130</x>
+     <y>340</y>
      <width>331</width>
      <height>501</height>
     </rect>
@@ -183,25 +151,6 @@ QPushButton:pressed {
    </property>
    <property name="pixmap">
     <pixmap>../image/actor_sayhi.png</pixmap>
-   </property>
-   <property name="scaledContents">
-    <bool>true</bool>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>920</x>
-     <y>490</y>
-     <width>301</width>
-     <height>321</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-   <property name="pixmap">
-    <pixmap>../image/dog.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>

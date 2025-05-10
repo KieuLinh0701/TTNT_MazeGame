@@ -1,1 +1,1 @@
-wa
+tuple(self.player_pos)
