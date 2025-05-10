@@ -1,7 +1,7 @@
 import sys
 import random
 from algorithm import a_star, q_learning, dfs
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen, QColor
@@ -11,12 +11,19 @@ import os
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
 
 class MazeWidget(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, lbl_time=None):
         super().__init__(parent)
+        self.lbl_time = lbl_time  # Lưu tham chiếu đến lblTime
+        if self.lbl_time is None:
+            print("Warning: lbl_time is None in MazeWidget")  # Thêm debug
 
         self.current_algorithm = None
         self.auto_solving = False  # Trạng thái tự động giải
         self.game_over = False  # Thêm biến trạng thái game_over
+        self.time_elapsed = 0  # Thời gian đã trôi qua (tính bằng giây)
+        self.timer = QTimer(self)  # Timer để đếm thời gian
+        self.timer.timeout.connect(self.update_time)  # Kết nối với hàm cập nhật thời gian
+        self.time_started = False  # Trạng thái bắt đầu đếm thời gian
         
        # Initialize footstep sound with QMediaPlayer
         self.step_player = QMediaPlayer(self)
@@ -57,12 +64,14 @@ class MazeWidget(QWidget):
         self.create_and_draw_maze(self.maze_size)
         self.player_pos = [1, 0]
         
-        # Gọi auto_solve ngay sau khi mê cung được tạo
-        QTimer.singleShot(500, self.auto_solve)  # Gọi sau 500ms để đảm bảo giao diện được load
         self.setFocus()
 
     def create_and_draw_maze(self, size):
         self.maze = self.generate_maze(size)
+        self.time_elapsed = 0  # Đặt lại thời gian khi tạo mê cung mới
+        self.time_started = False  # Đặt lại trạng thái thời gian
+        self.timer.stop()  # Dừng timer nếu đang chạy
+        self.update_time_label()  # Cập nhật nhãn thời gian
         self.update()  # Gọi lại paintEvent để vẽ mê cung
 
     def generate_maze(self, size):
@@ -170,6 +179,10 @@ class MazeWidget(QWidget):
             print("Không tìm thấy đích.")
             return
         
+        if self.current_algorithm is None:
+            print("Error: No algorithm set for auto_solve.")
+            return
+        
         path = self.current_algorithm(self.maze, self.maze_size, start, goal)
         if not path:
             print("Không có đường đi đến đích.")
@@ -179,9 +192,14 @@ class MazeWidget(QWidget):
         self.move_player_along_path(path)
 
     def move_player_along_path(self, path):
+        # Bắt đầu đồng hồ ngay trước khi di chuyển
+        if not self.time_started:
+            self.time_started = True
+            self.timer.start(1000) #Cập nhật mỗi giây
+ 
         # Di chuyển người chơi từng bước trên đường đi
         for i in range(len(path) - 1):
-            if not self.auto_solving:  # Kiểm tra trạng thái dừng
+            if not self.auto_solving:
                 return
 
             current_pos = path[i]
@@ -220,12 +238,21 @@ class MazeWidget(QWidget):
 
     def stop_auto_solve(self):
         self.auto_solving = False  # Dừng tự động giải
+        self.timer.stop()  # Dừng timer khi dừng giải tự động
+        self.time_started = False
 
     def set_algorithm(self, algorithm_name):
-        self.current_algorithm = algorithm_name
+        if algorithm_name in (dfs, a_star, q_learning):
+            self.current_algorithm = algorithm_name
+            print("Algorithm set to:", "DFS" if algorithm_name == dfs else "A*" if algorithm_name == a_star else "Q-Learning")
+        else:
+            print("Warning: Invalid algorithm provided, setting to None")
+            self.current_algorithm = None
 
     def win_game(self):
         self.game_over = True  # Ngăn người chơi di chuyển
+        self.timer.stop()  # Dừng timer khi đến đích
+        self.time_started = False
             
         # Phát âm thanh thắng
         self.win_sound.play()
@@ -234,6 +261,18 @@ class MazeWidget(QWidget):
         main_window = self.window()
         if isinstance(main_window, MyWindow):
             main_window.show_win_game()
+
+    def update_time(self):
+        self.time_elapsed += 1
+        self.update_time_label()
+
+    def update_time_label(self):
+        minutes = self.time_elapsed // 60
+        seconds = self.time_elapsed % 60
+        time_text = f"{minutes:02d} : {seconds:02d}"
+        print("Updating time:", time_text)  # Thêm debug
+        if self.lbl_time:  # Kiểm tra nếu lbl_time tồn tại
+            self.lbl_time.setText(time_text)
     
 class MyWindow(QMainWindow):
     def __init__(self):
@@ -260,6 +299,8 @@ class MyWindow(QMainWindow):
 
         # Set volume through QAudioOutput
         audio_output.setVolume(0.3)  # Adjust volume (value from 0.0 to 1.0)
+        self.lblTime = None  # Thêm tham chiếu đến lblTime
+        self.algorithm = None  # Khai báo thuộc tính algorithm
 
     def change_ui_level(self):
             
@@ -326,6 +367,8 @@ class MyWindow(QMainWindow):
         self.btnBack = new_widget.findChild(QPushButton, "btnBack")
         self.btnBack.clicked.connect(self.change_ui_level)
 
+        print("Algorithm set in change_ui_algorithm:", self.algorithm)  # Thêm debug
+
         self.setCentralWidget(new_widget)
         self.update()
 
@@ -352,7 +395,8 @@ class MyWindow(QMainWindow):
             self.centralWidget().deleteLater()
             
         self.maze_size = maze_size  # Lưu kích thước mê cung
-        self.algorithm = algorithm
+        self.algorithm = algorithm  # Gán thuật toán
+        print("Algorithm set in start_game_with_level:", self.algorithm)  # Thêm debug
         
         # Pass the spawn time to the maze widget
         self.change_ui()  # Modify to pass spawn_time to the UI change
@@ -366,17 +410,32 @@ class MyWindow(QMainWindow):
         maze_widget_placeholder = new_widget.findChild(QWidget, "mazeWidget")
         if not maze_widget_placeholder:
             raise RuntimeError("Widget 'mazeWidget' không tồn tại trong main.ui!")
+        
+        # Gán self.lblTime trước
+        self.lblTime = new_widget.findChild(QLabel, "lblTime")
+        if not self.lblTime:
+            raise RuntimeError("lblTime không được tìm thấy trong main.ui!")
+        print("lblTime found:", self.lblTime)
 
         # Tạo MazeWidget với kích thước tương ứng
-        maze_widget = MazeWidget(maze_widget_placeholder)
+        maze_widget = MazeWidget(maze_widget_placeholder, self.lblTime)
         maze_widget.maze_size = self.maze_size  # Gán kích thước mê cung
         maze_widget.current_algorithm = self.algorithm
+        maze_widget.set_algorithm(self.algorithm)  # Gán thuật toán
+        print("Algorithm in change_ui:", self.algorithm)  # Thêm debug
         maze_widget.create_and_draw_maze(self.maze_size)  # Tạo mê cung
+        QTimer.singleShot(500, maze_widget.auto_solve)  # Gọi sau khi mọi thứ sẵn sàng
         maze_widget.setGeometry(0, 0, maze_widget_placeholder.width(), maze_widget_placeholder.height())
         maze_widget.show()
 
         # Đảm bảo widget được vẽ lại
         self.update()
+
+        # Tìm và lưu lblTime
+        self.lblTime = new_widget.findChild(QLabel, "lblTime")
+        if not self.lblTime:
+            raise RuntimeError("lblTime không được tìm thấy trong main.ui!")
+        print("lblTime found:", self.lblTime)  # Thêm debug
 
         # Tìm nút btnMusic
         self.btnMusic = new_widget.findChild(QPushButton, "btnMusic")
@@ -445,6 +504,14 @@ class MyWindow(QMainWindow):
             self.btnBack.setEnabled(False)
         if hasattr(self, 'btnReNew'):
             self.btnReNew.setEnabled(False)
+
+        # Tìm label thời gian
+        lbl_result_time = self.win_game_widget.findChild(QLabel, "label_result_time")
+        if lbl_result_time:
+            minutes = self.centralWidget().findChild(MazeWidget).time_elapsed // 60
+            seconds = self.centralWidget().findChild(MazeWidget).time_elapsed % 60
+            lbl_result_time.setText(f"{minutes:02d} : {seconds:02d}")
+
         
         self.win_game_widget.show()
 
