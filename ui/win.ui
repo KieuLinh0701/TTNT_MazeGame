@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>726</width>
-    <height>438</height>
+    <width>773</width>
+    <height>371</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,17 +15,16 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
-    background-color: #2c3e50;
-    border: 3px solid #ff0000;
-    border-radius: 15px;
+    background-color: rgba(0, 77, 0, 180); /* màu xanh với độ mờ (~70%) */
+    border: none;
 }
 </string>
   </property>
   <widget class="QPushButton" name="btnNewLevel">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>320</y>
+     <x>280</x>
+     <y>260</y>
      <width>191</width>
      <height>54</height>
     </rect>
@@ -38,23 +37,23 @@
    </property>
    <property name="styleSheet">
     <string notr="true">QPushButton {
-    background-color: #ff0000; /* Màu xanh đậm hài hòa */
-    color: #ffffff; /* Chữ màu trắng nổi bật */
-    border: 2px solid #00509e; /* Viền xanh sáng hơn */
-    border-radius: 8px; /* Bo tròn góc nút */
-    padding: 10px; /* Đệm bên trong nút */
-    font-size: 20px; /* Kích thước chữ */
-	font-family: bungee;
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 20px;
+    font-family: bungee;
+    background-color: #FFEB3B;  /* Yellow */
+    border: 2px solid #FBC02D;
 }
 
 QPushButton:hover {
-    background-color: #00509e; /* Màu xanh sáng hơn khi hover */
-    border: 2px solid #007bff; /* Viền xanh sáng hơn nữa */
+    background-color: #0059b3;
+    border: 2px solid #3399ff;
 }
 
 QPushButton:pressed {
-    background-color: #962913; /* Màu tối hơn khi bấm */
-    border: 2px solid #003366; /* Viền đậm hơn */
+    background-color: #002244;
+    border: 2px solid #001122;
 }
 </string>
    </property>
@@ -65,8 +64,8 @@ QPushButton:pressed {
   <widget class="QLabel" name="label_gameover">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>10</y>
+     <x>30</x>
+     <y>30</y>
      <width>711</width>
      <height>261</height>
     </rect>
@@ -79,14 +78,13 @@ QPushButton:pressed {
    </property>
    <property name="styleSheet">
     <string notr="true">QLabel {
-    font-family: bungee;  /* Font chữ hiện đại và dễ đọc */
-    font-weight: bold;                /* Chữ đậm, làm nổi bật tiêu đề */
-    font-size: 100px;                  /* Kích thước chữ lớn để dễ đọc */
-    color: #FFD700;                   /* Màu chữ trắng, nổi bật trên nền tối */
-    text-align: center;               /* Căn giữa chữ */
-    background-color: transparent;    /* Không có nền cho QLabel */
-    border: none;                     /* Không có viền */
-    padding: 20px;                    /* Đệm xung quanh chữ */
+    font-family: bungee;
+    font-size: 20px;
+    color: #ffcc00; /* vàng nổi bật hơn */
+    text-align: center;
+    background-color: transparent;
+    border: none;
+    padding: 10px;
 }
 
 QLabel#title {
@@ -108,8 +106,8 @@ QLabel#title {
   <widget class="QPushButton" name="btnContinue">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>250</y>
+     <x>40</x>
+     <y>260</y>
      <width>191</width>
      <height>54</height>
     </rect>
@@ -122,28 +120,69 @@ QLabel#title {
    </property>
    <property name="styleSheet">
     <string notr="true">QPushButton {
-    background-color: #ff0000; /* Màu xanh đậm hài hòa */
-    color: #ffffff; /* Chữ màu trắng nổi bật */
-    border: 2px solid #00509e; /* Viền xanh sáng hơn */
-    border-radius: 8px; /* Bo tròn góc nút */
-    padding: 10px; /* Đệm bên trong nút */
-    font-size: 20px; /* Kích thước chữ */
-	font-family: bungee;
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 20px;
+    font-family: bungee;
+    background-color: #4CAF50;  /* Green */
+    border: 2px solid #388E3C;
 }
 
 QPushButton:hover {
-    background-color: #00509e; /* Màu xanh sáng hơn khi hover */
-    border: 2px solid #007bff; /* Viền xanh sáng hơn nữa */
+    background-color: #0059b3;
+    border: 2px solid #3399ff;
 }
 
 QPushButton:pressed {
-    background-color: #962913; /* Màu tối hơn khi bấm */
-    border: 2px solid #003366; /* Viền đậm hơn */
+    background-color: #002244;
+    border: 2px solid #001122;
 }
 </string>
    </property>
    <property name="text">
     <string>CONTINUE</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnNewAlgorithm">
+   <property name="geometry">
+    <rect>
+     <x>510</x>
+     <y>260</y>
+     <width>221</width>
+     <height>54</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 20px;
+    font-family: bungee;
+    background-color: #8B4513;  /* Brown */
+    border: 2px solid #6D3F0B;
+}
+
+QPushButton:hover {
+    background-color: #0059b3;
+    border: 2px solid #3399ff;
+}
+
+QPushButton:pressed {
+    background-color: #002244;
+    border: 2px solid #001122;
+}
+</string>
+   </property>
+   <property name="text">
+    <string>NEW ALGORITHM</string>
    </property>
   </widget>
  </widget>

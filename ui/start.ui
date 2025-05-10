@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Hard Way To School</string>
+   <string>Escape From The Forest</string>
   </property>
   <property name="windowIcon">
    <iconset>
@@ -146,10 +146,10 @@ QLabel#title {
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>540</x>
-      <y>520</y>
+      <x>560</x>
+      <y>450</y>
       <width>291</width>
-      <height>291</height>
+      <height>381</height>
      </rect>
     </property>
     <property name="text">
@@ -165,10 +165,10 @@ QLabel#title {
    <widget class="QPushButton" name="btnStart">
     <property name="geometry">
      <rect>
-      <x>580</x>
-      <y>390</y>
-      <width>230</width>
-      <height>65</height>
+      <x>590</x>
+      <y>370</y>
+      <width>231</width>
+      <height>71</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -179,25 +179,25 @@ QLabel#title {
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
-    background-color: #003366; /* Màu xanh đậm hài hòa */
-    color: #ffffff; /* Chữ màu trắng nổi bật */
-    border: 2px solid #00509e; /* Viền xanh sáng hơn */
-    border-radius: 8px; /* Bo tròn góc nút */
-    padding: 10px; /* Đệm bên trong nút */
-    font-size: 25px; /* Kích thước chữ */
-	font-family: bungee;
+    background-color: #21618C; /* Xanh dương vừa, nổi bật trên nền xanh lá */
+    color: #ffffff;
+    border: 3px solid #48C9B0; /* Viền xanh ngọc nổi bật */
+    border-radius: 25px;
+    padding: 10px;
+    font-size: 28px;
+    font-family: 'Bungee', sans-serif;
+    letter-spacing: 2px;
 }
 
 QPushButton:hover {
-    background-color: #00509e; /* Màu xanh sáng hơn khi hover */
-    border: 2px solid #007bff; /* Viền xanh sáng hơn nữa */
+    background-color: #2E86C1;
+    border: 3px solid #76D7C4;
 }
 
 QPushButton:pressed {
-    background-color: #001a3d; /* Màu tối hơn khi bấm */
-    border: 2px solid #003366; /* Viền đậm hơn */
-}
-</string>
+    background-color: #154360;
+    border: 3px solid #117864;
+}</string>
     </property>
     <property name="text">
      <string>START</string>
