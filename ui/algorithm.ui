@@ -252,7 +252,7 @@ QPushButton:pressed {
     <string>Q - LEARNING</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btnHard_2">
+  <widget class="QPushButton" name="btnBacktracking">
    <property name="geometry">
     <rect>
      <x>560</x>
@@ -281,7 +281,7 @@ QPushButton:pressed {
 }</string>
    </property>
    <property name="text">
-    <string>?</string>
+    <string>BACKTRACKING</string>
    </property>
   </widget>
  </widget>

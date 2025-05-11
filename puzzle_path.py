@@ -1,6 +1,8 @@
 import sys
 import random
-from algorithm import a_star, q_learning, dfs
+from datetime import datetime
+import pandas as pd
+from algorithm import a_star, q_learning, dfs, backtracking
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
@@ -14,8 +16,6 @@ class MazeWidget(QWidget):
     def __init__(self, parent=None, lbl_time=None):
         super().__init__(parent)
         self.lbl_time = lbl_time  # Lưu tham chiếu đến lblTime
-        if self.lbl_time is None:
-            print("Warning: lbl_time is None in MazeWidget")  # Thêm debug
 
         self.current_algorithm = None
         self.auto_solving = False  # Trạng thái tự động giải
@@ -192,49 +192,45 @@ class MazeWidget(QWidget):
         self.move_player_along_path(path)
 
     def move_player_along_path(self, path):
-        # Bắt đầu đồng hồ ngay trước khi di chuyển
+        self.path_to_follow = path
+        self.step_index = 0
+
+        # Bắt đầu đồng hồ nếu chưa chạy
         if not self.time_started:
             self.time_started = True
-            self.timer.start(1000) #Cập nhật mỗi giây
- 
-        # Di chuyển người chơi từng bước trên đường đi
-        for i in range(len(path) - 1):
-            if not self.auto_solving:
+            self.timer.start(100)
+
+        def step():
+            if self.step_index >= len(self.path_to_follow) - 1:
+                self.player_pos = list(self.path_to_follow[-1])
+                self.update()
+                self.win_game()  # Gọi win_game đúng lúc kết thúc thật sự
                 return
 
-            current_pos = path[i]
-            next_pos = path[i + 1]
+            current_pos = self.path_to_follow[self.step_index]
+            next_pos = self.path_to_follow[self.step_index + 1]
 
-            # Xác định hướng di chuyển
-            dx = next_pos[1] - current_pos[1]  # Sự thay đổi theo cột (x)
-            dy = next_pos[0] - current_pos[0]  # Sự thay đổi theo hàng (y)
+            dx = next_pos[1] - current_pos[1]
+            dy = next_pos[0] - current_pos[0]
 
-            if dx == 1:  # Di chuyển sang phải
+            if dx == 1:
                 self.current_player_image = self.player_images["right"]
-            elif dx == -1:  # Di chuyển sang trái
+            elif dx == -1:
                 self.current_player_image = self.player_images["left"]
-            elif dy == 1:  # Di chuyển xuống
+            elif dy == 1:
                 self.current_player_image = self.player_images["down"]
-            elif dy == -1:  # Di chuyển lên
+            elif dy == -1:
                 self.current_player_image = self.player_images["up"]
 
-            # Cập nhật vị trí người chơi
             self.player_pos = list(next_pos)
-
             self.step_player.play()
-
-            # Vẽ lại giao diện
             self.update()
-            QCoreApplication.processEvents()  # Cập nhật giao diện
+            QCoreApplication.processEvents()
 
-            # Nghỉ giữa các bước
-            QThread.msleep(300)  # 200ms giữa mỗi bước di chuyển
+            self.step_index += 1
+            QTimer.singleShot(300, step)
 
-        # Đảm bảo người chơi đứng ở vị trí cuối cùng (đích)
-        self.player_pos = list(path[-1])
-        self.update()  # Vẽ lại lần cuối
-        self.win_game()
-
+        QTimer.singleShot(0, step)
 
     def stop_auto_solve(self):
         self.auto_solving = False  # Dừng tự động giải
@@ -242,9 +238,9 @@ class MazeWidget(QWidget):
         self.time_started = False
 
     def set_algorithm(self, algorithm_name):
-        if algorithm_name in (dfs, a_star, q_learning):
+        if algorithm_name in (dfs, a_star, q_learning, backtracking):
             self.current_algorithm = algorithm_name
-            print("Algorithm set to:", "DFS" if algorithm_name == dfs else "A*" if algorithm_name == a_star else "Q-Learning")
+            print("Algorithm set to:", "DFS" if algorithm_name == dfs else "A*" if algorithm_name == a_star else "Q-Learning" if algorithm_name == q_learning else "Backtracking")
         else:
             print("Warning: Invalid algorithm provided, setting to None")
             self.current_algorithm = None
@@ -260,19 +256,64 @@ class MazeWidget(QWidget):
         # Gọi hàm hiển thị Win từ MyWindow
         main_window = self.window()
         if isinstance(main_window, MyWindow):
+            self.save_to_excel(main_window.algorithm, main_window.maze_size) #lưu vào Excel
             main_window.show_win_game()
 
     def update_time(self):
-        self.time_elapsed += 1
+        self.time_elapsed += 100  # tăng 100ms mỗi lần gọi (vì timer mỗi 100ms)
         self.update_time_label()
 
     def update_time_label(self):
-        minutes = self.time_elapsed // 60
-        seconds = self.time_elapsed % 60
-        time_text = f"{minutes:02d} : {seconds:02d}"
-        print("Updating time:", time_text)  # Thêm debug
-        if self.lbl_time:  # Kiểm tra nếu lbl_time tồn tại
+        total_ms = self.time_elapsed
+        minutes = total_ms // 60000
+        seconds = (total_ms % 60000) // 1000
+        centiseconds = (total_ms % 1000) // 10  # 2 chữ số mili giây: 0–99
+
+        time_text = f"{minutes:02d}:{seconds:02d}.{centiseconds:02d}"
+        print("Updating time:", time_text)
+
+        if self.lbl_time:
             self.lbl_time.setText(time_text)
+
+    def save_to_excel(self, algorithm, maze_size):
+        # Xác định tên thuật toán
+        algorithm_name = "DFS" if algorithm == dfs else "A*" if algorithm == a_star else "Q-Learning" if algorithm == q_learning else "Backtracking"
+        # Xác định level dựa trên maze_size
+        level = (
+            "Easy" if maze_size == 21 else
+            "Medium" if maze_size == 31 else
+            "Hard" if maze_size == 41 else
+            "Expert" if maze_size == 51 else "Unknown"
+        )
+        # Lấy thời gian hiện tại
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Định dạng thời gian đến đích
+        total_ms = self.time_elapsed
+        minutes = total_ms // 60000
+        seconds = (total_ms % 60000) // 1000
+        centiseconds = (total_ms % 1000) // 10
+        time_to_goal = f"{minutes:02d}:{seconds:02d}.{centiseconds:02d}"
+        # Tạo dữ liệu để lưu
+        data = {
+            "DateTime": [current_time],
+            "Algorithm": [algorithm_name],
+            "Level": [level],
+            "TimeToGoal": [time_to_goal]
+        }
+        df = pd.DataFrame(data)
+        # Lưu vào file Excel
+        excel_file = "game_records.xlsx"
+        try:
+            # Nếu file đã tồn tại, đọc và nối dữ liệu
+            if os.path.exists(excel_file):
+                existing_df = pd.read_excel(excel_file)
+                df = pd.concat([existing_df, df], ignore_index=True)
+            # Ghi dữ liệu vào file Excel
+            df.to_excel(excel_file, index=False)
+            print(f"Saved game record to {excel_file}")
+        except Exception as e:
+            print(f"Error saving to Excel: {e}")
+
     
 class MyWindow(QMainWindow):
     def __init__(self):
@@ -355,6 +396,7 @@ class MyWindow(QMainWindow):
         btn_Dfs = new_widget.findChild(QPushButton, "btnDfs")
         btn_AStar = new_widget.findChild(QPushButton, "btnAStar")
         btn_QLearning = new_widget.findChild(QPushButton, "btnQLearning")
+        btn_Backtracking = new_widget.findChild(QPushButton, "btnBacktracking")
 
         if btn_Dfs:
             btn_Dfs.clicked.connect(lambda: self.start_game_with_level(size, dfs))
@@ -362,6 +404,8 @@ class MyWindow(QMainWindow):
             btn_AStar.clicked.connect(lambda: self.start_game_with_level(size, a_star))
         if btn_QLearning:
             btn_QLearning.clicked.connect(lambda: self.start_game_with_level(size, q_learning))
+        if btn_Backtracking:
+            btn_Backtracking.clicked.connect(lambda: self.start_game_with_level(size, backtracking))
 
         # Tìm nút btnBack
         self.btnBack = new_widget.findChild(QPushButton, "btnBack")
@@ -450,30 +494,7 @@ class MyWindow(QMainWindow):
         self.btnBack.clicked.connect(self.change_ui_level)
         self.btnBack.clicked.connect(maze_widget.stop_auto_solve)
 
-        # Tìm nút btnReNew
-        self.btnReNew = new_widget.findChild(QPushButton, "btnReNew")
-        if self.btnReNew:
-            self.btnReNew.clicked.connect(lambda: self.recreate_maze(maze_widget))
-            self.btnReNew.clicked.connect(lambda: maze_widget.setFocus())
-
         self.setCentralWidget(new_widget)
-    
-    def recreate_maze(self, maze_widget):
-        if not isinstance(maze_widget, MazeWidget):
-            raise ValueError("Provided widget is not a valid MazeWidget instance.")
-        
-        maze_widget.create_and_draw_maze(maze_widget.maze_size)
-
-        # Đặt lại vị trí người chơi
-        maze_widget.player_pos = [1, 0]
-        # Gọi auto_solve ngay sau khi mê cung được tạo
-        maze_widget.stop_auto_solve()
-        QTimer.singleShot(500, maze_widget.auto_solve)  # Gọi sau 500ms để đảm bảo giao diện được load
-        self.setFocus()
-
-        maze_widget.update()
-        # Cập nhật lại hướng nhân vật
-        maze_widget.current_player_image = maze_widget.player_images["right"]  # Ví dụ, hướng ban đầu là "right"
         
     def show_win_game(self):
         self.win_game_widget = QWidget(self)
@@ -507,12 +528,15 @@ class MyWindow(QMainWindow):
 
         # Tìm label thời gian
         lbl_result_time = self.win_game_widget.findChild(QLabel, "label_result_time")
-        if lbl_result_time:
-            minutes = self.centralWidget().findChild(MazeWidget).time_elapsed // 60
-            seconds = self.centralWidget().findChild(MazeWidget).time_elapsed % 60
-            lbl_result_time.setText(f"{minutes:02d} : {seconds:02d}")
+        maze_widget = self.centralWidget().findChild(MazeWidget)
+        if lbl_result_time and maze_widget:
+            total_ms = maze_widget.time_elapsed
+            minutes = total_ms // 60000
+            seconds = (total_ms % 60000) // 1000
+            centiseconds = (total_ms % 1000) // 10
 
-        
+            lbl_result_time.setText(f"Arrived the goal in {minutes:02d}:{seconds:02d}.{centiseconds:02d} seconds.")
+
         self.win_game_widget.show()
 
 if __name__ == "__main__":
