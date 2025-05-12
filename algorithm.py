@@ -136,12 +136,10 @@ def steepest_ascent_hill_climbing(maze, maze_size, start_pos, goal_pos):
             came_from[best_neighbor] = current
             current = best_neighbor
             stack.append(current)
-            print(f"Moving to: {current}")
         elif stack:  # Backtrack nếu không có hàng xóm hợp lệ
             stack.pop()  # Bỏ node hiện tại
             if stack:
                 current = stack[-1]  # Quay lại node trước đó
-                print(f"Backtracking to: {current}")
             else:
                 print("Không tìm thấy đường đi (bị kẹt)!")
                 return None
@@ -156,8 +154,49 @@ def steepest_ascent_hill_climbing(maze, maze_size, start_pos, goal_pos):
         path.append(current)
     path.reverse()
     
-    print(f"Path found: {path}")
     return path
+
+def backtracking(maze, maze_size, start_pos, goal_pos):
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+    path = []        # Lưu đường đi đúng (kết quả)
+    visited = set()  # Ghi nhớ các ô đã đi qua để không bị lặp lại
+
+    def is_valid(cell):
+        """Kiểm tra ô có hợp lệ để đi không"""
+        r, c = cell
+        return (
+            0 <= r < maze_size and 0 <= c < maze_size and
+            maze[r][c] in (1, 2, 3) and                     
+            cell not in visited                 
+        )
+
+    def backtrack(current):
+        """Hàm đệ quy chính của thuật toán Backtracking"""
+        if current == goal_pos:
+            path.append(current)  # Thêm ô đích vào đường đi
+            return True           # Đã đến đích, kết thúc
+
+        visited.add(current)  # Đánh dấu đã đi qua
+        path.append(current)  # Thêm vào đường đi hiện tại
+
+        for dr, dc in directions:
+            next_cell = (current[0] + dr, current[1] + dc)
+            if is_valid(next_cell):
+                if backtrack(next_cell):  # Đệ quy: thử đi tiếp
+                    return True           # Nếu tìm được đường đi thì kết thúc luôn
+
+        # Không đi được đâu → quay lui: loại ô hiện tại ra khỏi đường đi
+        path.pop()
+        visited.remove(current)
+        return False
+
+    # Bắt đầu tìm đường từ ô start_pos
+    if backtrack(start_pos):
+        return path  # Trả về đường đi đúng nếu tìm được
+    else:
+        print("Không tìm thấy đường đi với Backtracking.")
+        return []  # Không có đường đi đến đích
 
 def q_learning(maze, maze_size, start, goal, episodes = 1000):
     q_table = {}
