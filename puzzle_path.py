@@ -61,7 +61,7 @@ class MazeWidget(QWidget):
         self.player_pos = [1, 0]
         
         # Gọi auto_solve ngay sau khi mê cung được tạo
-        QTimer.singleShot(500, self.auto_solve)  # Gọi sau 500ms để đảm bảo giao diện được load
+        QTimer.singleShot(1000, self.auto_solve)  # Gọi sau 1000ms để đảm bảo giao diện được load
         self.setFocus()
 
     def create_and_draw_maze(self, size):
@@ -341,13 +341,15 @@ class MazeWidget(QWidget):
         try:
             # Nếu file đã tồn tại, đọc và nối dữ liệu
             if os.path.exists(excel_file):
-                existing_df = pd.read_excel(excel_file)
+                existing_df = pd.read_excel(excel_file, engine='openpyxl')  # Chỉ định engine để đọc
                 df = pd.concat([existing_df, df], ignore_index=True)
+            
             # Ghi dữ liệu vào file Excel
-            df.to_excel(excel_file, index=False)
+            df.to_excel(excel_file, index=False, engine='openpyxl')  # Chỉ định engine để ghi
             print(f"Saved game record to {excel_file}")
         except Exception as e:
             print(f"Error saving to Excel: {e}")
+
 
 class MyWindow(QMainWindow):
     def __init__(self):

@@ -188,7 +188,7 @@ QPushButton:pressed {
   <widget class="QLabel" name="label_result_time">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>150</x>
      <y>230</y>
      <width>931</width>
      <height>91</height>
