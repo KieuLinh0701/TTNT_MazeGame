@@ -140,7 +140,7 @@ QPushButton:pressed {
   <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
-     <x>120</x>
+     <x>160</x>
      <y>350</y>
      <width>331</width>
      <height>501</height>
@@ -150,7 +150,7 @@ QPushButton:pressed {
     <string/>
    </property>
    <property name="pixmap">
-    <pixmap>../image/actor_sayhi.png</pixmap>
+    <pixmap>../image/actor_sayhi2.png</pixmap>
    </property>
    <property name="scaledContents">
     <bool>true</bool>
