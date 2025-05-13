@@ -513,7 +513,7 @@ class MyWindow(QMainWindow):
 
         # Tìm nút btnBack
         self.btnBack = new_widget.findChild(QPushButton, "btnBack")
-        self.btnBack.clicked.connect(self.change_ui_level
+        self.btnBack.clicked.connect(self.change_ui_map)
         self.btnBack.clicked.connect(maze_widget.stop_auto_solve)
 
         self.setCentralWidget(new_widget)
