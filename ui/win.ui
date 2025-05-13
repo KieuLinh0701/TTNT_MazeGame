@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>781</width>
-    <height>442</height>
+    <width>783</width>
+    <height>516</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,9 +23,9 @@
   <widget class="QPushButton" name="btnNewMap">
    <property name="geometry">
     <rect>
-     <x>280</x>
-     <y>350</y>
-     <width>191</width>
+     <x>460</x>
+     <y>340</y>
+     <width>221</width>
      <height>54</height>
     </rect>
    </property>
@@ -106,9 +106,9 @@ QLabel#title {
   <widget class="QPushButton" name="btnAgain">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>350</y>
-     <width>191</width>
+     <x>100</x>
+     <y>340</y>
+     <width>221</width>
      <height>54</height>
     </rect>
    </property>
@@ -147,8 +147,8 @@ QPushButton:pressed {
   <widget class="QPushButton" name="btnNewAlgorithm">
    <property name="geometry">
     <rect>
-     <x>510</x>
-     <y>350</y>
+     <x>460</x>
+     <y>420</y>
      <width>221</width>
      <height>54</height>
     </rect>
@@ -166,8 +166,8 @@ QPushButton:pressed {
     padding: 10px;
     font-size: 20px;
     font-family: bungee;
-    background-color: #8B4513;  /* Brown */
-    border: 2px solid #6D3F0B;
+    background-color: #0059b3;  /* Brown */
+    border: 2px solid #0059b3;
 }
 
 QPushButton:hover {
@@ -215,6 +215,47 @@ QLabel#title {
    </property>
    <property name="text">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:24pt;&quot;&gt;Arrived the goal in 00:00.00 seconds.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnPath">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>420</y>
+     <width>221</width>
+     <height>54</height>
+    </rect>
+   </property>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+    color: white;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 20px;
+    font-family: bungee;
+	background-color: #8B4513;  /* Brown */
+    border: 2px solid #6D3F0B;
+}
+
+QPushButton:hover {
+    background-color: #0059b3;
+    border: 2px solid #3399ff;
+}
+
+QPushButton:pressed {
+    background-color: #002244;
+    border: 2px solid #001122;
+}
+</string>
+   </property>
+   <property name="text">
+    <string>Show Path</string>
    </property>
   </widget>
  </widget>
