@@ -56,6 +56,9 @@ class MazeWidget(QWidget):
         self.start_image = QPixmap("image\\start.png")
         self.cell_size = 30
 
+        self.show_path = True  # Cờ để hiển thị đường đi (mặc định là True)
+        self.path = None  # Lưu đường đi từ start đến goal
+
         # Tạo mê cung và đặt vị trí người chơi
         self.create_and_draw_maze(self.map_index)
         self.player_pos = [1, 0]
@@ -71,7 +74,18 @@ class MazeWidget(QWidget):
         self.time_started = False  # Đặt lại trạng thái thời gian
         self.timer.stop()  # Dừng timer nếu đang chạy
         self.update_time_label()  # Cập nhật nhãn thời gian
+        self.path = None  # Đặt lại path
         self.update()  # Gọi lại paintEvent để vẽ mê cung
+
+    def toggle_path(self):
+        """Đảo trạng thái hiển thị đường đi và cập nhật giao diện."""
+        self.show_path = not self.show_path
+        main_window = self.window()
+        if isinstance(main_window, QMainWindow):
+            btn_path = main_window.findChild(QPushButton, "btnPath")
+            if btn_path:
+                btn_path.setChecked(self.show_path)
+        self.update()
 
     def generate_maze(self, map_index):
         # Mặc định sẵn 3 mê cung
@@ -183,6 +197,18 @@ class MazeWidget(QWidget):
                     painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.start_image)
                 elif self.maze[row][col] == 3:  # Điểm kết thúc
                     painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.goal_image)
+
+        # Vẽ đường đi nếu show_path là True và path tồn tại
+        if self.show_path and self.path:
+            painter.setPen(QPen(QColor("red"), 5, Qt.PenStyle.SolidLine))  # Đường đỏ, dày 5px
+            for i in range(len(self.path) - 1):
+                start_pos = self.path[i]
+                end_pos = self.path[i + 1]
+                start_x = start_pos[1] * self.cell_size + self.cell_size // 2
+                start_y = start_pos[0] * self.cell_size + self.cell_size // 2
+                end_x = end_pos[1] * self.cell_size + self.cell_size // 2
+                end_y = end_pos[0] * self.cell_size + self.cell_size // 2
+                painter.drawLine(start_x, start_y, end_x, end_y)   
         
         # Vẽ người chơi
         scaled_image = self.current_player_image.scaled(
@@ -208,13 +234,14 @@ class MazeWidget(QWidget):
             if goal:
                 break
         
-        path = self.current_algorithm(self.maze, self.maze_size, start, goal)
-        if not path:
+        self.path = self.current_algorithm(self.maze, self.maze_size, start, goal)
+        if not self.path:
             print("Không có đường đi đến đích.")
+            self.auto_solving = False
             return
         
         # Di chuyển người chơi theo đường đi
-        self.move_player_along_path(path)        
+        self.move_player_along_path(self.path)        
     
     def move_player_along_path(self, path):
         # Bắt đầu đồng hồ nếu chưa chạy
@@ -518,6 +545,12 @@ class MyWindow(QMainWindow):
         self.btnBack.clicked.connect(self.change_ui_algorithm)
         self.btnBack.clicked.connect(maze_widget.stop_auto_solve)
 
+        # Tìm nút btnPath
+        self.btnPath = new_widget.findChild(QPushButton, "btnPath")
+        if self.btnPath:
+            self.btnPath.clicked.connect(maze_widget.toggle_path)
+            self.btnPath.setChecked(maze_widget.show_path)
+
         self.setCentralWidget(new_widget)
     
     def show_win_game(self):
@@ -534,6 +567,7 @@ class MyWindow(QMainWindow):
         btn_again = self.win_game_widget.findChild(QPushButton, "btnAgain")
         btn_new_map = self.win_game_widget.findChild(QPushButton, "btnNewMap")
         btn_new_algorithm = self.win_game_widget.findChild(QPushButton, "btnNewAlgorithm")
+        btn_show_path = self.win_game_widget.findChild(QPushButton, "btnPath")
 
         if btn_again:
             btn_again.clicked.connect(lambda: self.start_game_with_algorithm(self.algorithm))
@@ -541,12 +575,16 @@ class MyWindow(QMainWindow):
             btn_new_map.clicked.connect(self.change_ui_map)
         if btn_new_algorithm:
            btn_new_algorithm.clicked.connect(lambda: self.change_ui_algorithm(self.map_index))
+        if btn_show_path:
+            btn_show_path.clicked.connect(self.hide_win_game)
             
         # Vô hiệu hóa các nút bên dưới
         if hasattr(self, 'btnMusic'):
             self.btnMusic.setEnabled(False)
         if hasattr(self, 'btnBack'):
             self.btnBack.setEnabled(False)
+        if hasattr(self, 'btnPath'):
+            self.btnPath.setEnabled(False)
 
         # Tìm label thời gian
         lbl_result_time = self.win_game_widget.findChild(QLabel, "label_result_time")
@@ -560,6 +598,20 @@ class MyWindow(QMainWindow):
             lbl_result_time.setText(f"Arrived the goal in {minutes:02d}:{seconds:02d}.{centiseconds:02d} seconds")
         
         self.win_game_widget.show()
+
+    def hide_win_game(self):
+        """Ẩn win_game_widget và kích hoạt lại các nút."""
+        if self.win_game_widget:
+            self.win_game_widget.hide()
+            self.win_game_widget.deleteLater()
+            self.win_game_widget = None
+        
+        if hasattr(self, 'btnMusic'):
+            self.btnMusic.setEnabled(True)
+        if hasattr(self, 'btnBack'):
+            self.btnBack.setEnabled(True)
+        if hasattr(self, 'btnPath'):
+            self.btnPath.setEnabled(True)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
