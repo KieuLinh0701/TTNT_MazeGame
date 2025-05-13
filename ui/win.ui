@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>773</width>
-    <height>371</height>
+    <width>781</width>
+    <height>442</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,11 +20,11 @@
 }
 </string>
   </property>
-  <widget class="QPushButton" name="btnNewLevel">
+  <widget class="QPushButton" name="btnNewMap">
    <property name="geometry">
     <rect>
      <x>280</x>
-     <y>260</y>
+     <y>350</y>
      <width>191</width>
      <height>54</height>
     </rect>
@@ -58,14 +58,14 @@ QPushButton:pressed {
 </string>
    </property>
    <property name="text">
-    <string>NEW LEVEL</string>
+    <string>NEW MAP</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_gameover">
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>30</y>
+     <y>40</y>
      <width>711</width>
      <height>261</height>
     </rect>
@@ -79,7 +79,7 @@ QPushButton:pressed {
    <property name="styleSheet">
     <string notr="true">QLabel {
     font-family: bungee;
-    font-size: 20px;
+    font-size: 30px;
     color: #ffcc00; /* vàng nổi bật hơn */
     text-align: center;
     background-color: transparent;
@@ -89,7 +89,7 @@ QPushButton:pressed {
 
 QLabel#title {
     font-family: 'Verdana', sans-serif; /* Font chữ tùy chỉnh (có thể thay đổi theo sở thích) */
-    font-size: 40px;                   /* Kích thước chữ rất lớn */
+    font-size: 30px;                   /* Kích thước chữ rất lớn */
     color: #ffcc00;                    /* Màu vàng nổi bật (có thể thay đổi) */
     font-weight: bold;                 /* Làm chữ đậm */
     letter-spacing: 2px;               /* Tăng khoảng cách giữa các ký tự */
@@ -97,17 +97,17 @@ QLabel#title {
 </string>
    </property>
    <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:72pt; color:#ffffff;&quot;&gt;YOU WIN&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:72pt; color:#ffffff;&quot;&gt;FOUND THE WAY!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
    </property>
   </widget>
-  <widget class="QPushButton" name="btnContinue">
+  <widget class="QPushButton" name="btnAgain">
    <property name="geometry">
     <rect>
      <x>40</x>
-     <y>260</y>
+     <y>350</y>
      <width>191</width>
      <height>54</height>
     </rect>
@@ -141,14 +141,14 @@ QPushButton:pressed {
 </string>
    </property>
    <property name="text">
-    <string>CONTINUE</string>
+    <string>AGAIN</string>
    </property>
   </widget>
   <widget class="QPushButton" name="btnNewAlgorithm">
    <property name="geometry">
     <rect>
      <x>510</x>
-     <y>260</y>
+     <y>350</y>
      <width>221</width>
      <height>54</height>
     </rect>
@@ -183,6 +183,38 @@ QPushButton:pressed {
    </property>
    <property name="text">
     <string>NEW ALGORITHM</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_result_time">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>230</y>
+     <width>931</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel {
+    font-family: bungee;
+    font-size: 20px;
+    color: #ffcc00; /* vàng nổi bật hơn */
+    text-align: center;
+    background-color: transparent;
+    border: none;
+    padding: 10px;
+}
+
+QLabel#title {
+    font-family: 'Verdana', sans-serif; /* Font chữ tùy chỉnh (có thể thay đổi theo sở thích) */
+    font-size: 20px;                   /* Kích thước chữ rất lớn */
+    color: #ffcc00;                    /* Màu vàng nổi bật (có thể thay đổi) */
+    font-weight: bold;                 /* Làm chữ đậm */
+    letter-spacing: 2px;               /* Tăng khoảng cách giữa các ký tự */
+}</string>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-size:24pt;&quot;&gt;Arrived the goal in 00:00.00 seconds.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </widget>
  </widget>
