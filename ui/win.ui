@@ -255,7 +255,7 @@ QPushButton:pressed {
 </string>
    </property>
    <property name="text">
-    <string>Show Path</string>
+    <string>SHOW PATHh</string>
    </property>
   </widget>
  </widget>
