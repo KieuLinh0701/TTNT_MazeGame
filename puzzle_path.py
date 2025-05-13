@@ -1,6 +1,6 @@
 import sys
 import random
-from algorithm import a_star, q_learning, dfs
+from algorithm import aStar, q_learning, dfs
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
@@ -318,7 +318,7 @@ class MyWindow(QMainWindow):
         if btn_Dfs:
             btn_Dfs.clicked.connect(lambda: self.start_game_with_level(size, dfs))
         if btn_AStar:
-            btn_AStar.clicked.connect(lambda: self.start_game_with_level(size, a_star))
+            btn_AStar.clicked.connect(lambda: self.start_game_with_level(size, aStar))
         if btn_QLearning:
             btn_QLearning.clicked.connect(lambda: self.start_game_with_level(size, q_learning))
 

@@ -1,1 +1,0 @@
-tuple(self.player_pos)

@@ -2,24 +2,23 @@ from heapq import heappush, heappop
 import random
 from queue import PriorityQueue
 
-def manhattan_distance(pos1, pos2):
+def manhattanDistance(pos1, pos2):
     """Tính khoảng cách Manhattan giữa hai điểm."""
     return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
-def dfs(maze, maze_size, start_pos, goal_pos):
-    """Tìm đường từ start_pos đến goal_pos bằng thuật toán DFS."""
-    stack = [start_pos]  # Sử dụng stack thay cho open_list
-    came_from = {}  # Lưu lại đường đi
+def dfs(maze, size, start, goal):
+    stack = [start]  
+    cameFrom = {}  # Lưu lại đường đi
     visited = set()  # Theo dõi các ô đã thăm
 
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Các hướng di chuyển
 
     while stack:
         current = stack.pop()  # Lấy ra phần tử cuối cùng trong stack
-        if current == goal_pos:
+        if current == goal:
             path = [current]
-            while current in came_from:
-                current = came_from[current]
+            while current in cameFrom:
+                current = cameFrom[current]
                 path.append(current)
             path.reverse()
             return path
@@ -30,50 +29,47 @@ def dfs(maze, maze_size, start_pos, goal_pos):
 
         for dx, dy in directions:
             neighbor = (current[0] + dx, current[1] + dy)
-            if 0 <= neighbor[0] < maze_size and 0 <= neighbor[1] < maze_size:
+            if 0 <= neighbor[0] < size and 0 <= neighbor[1] < size:
                 if maze[neighbor[0]][neighbor[1]] in (1, 2, 3):  # Chỉ di chuyển vào ô có lối đi
                     if neighbor not in visited:
-                        came_from[neighbor] = current
+                        cameFrom[neighbor] = current
                         stack.append(neighbor)  # Thêm hàng xóm vào stack để duyệt sau
 
-    print("Không tìm thấy đường đi!")
     return None
 
-def a_star(maze, maze_size, start_pos, goal_pos):
-    open_list = PriorityQueue()
+def aStar(maze, size, start, goal):
+    openList = PriorityQueue()
     counter = 0
-    open_list.put((0, counter, start_pos))
+    openList.put((0, counter, start))
     counter += 1
-    came_from = {}
-    g_score = {start_pos: 0}
-    f_score = {start_pos: manhattan_distance(start_pos, goal_pos)}
+    cameFrom = {}
+    gScore = {start: 0}
+    fScore = {start: manhattanDistance(start, goal)}
     
     directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
 
-    while not open_list.empty():
-        _, _, current = open_list.get()
-        if current == goal_pos:
+    while not openList.empty():
+        _, _, current = openList.get()
+        if current == goal:
             path = [current]
-            while current in came_from:
-                current = came_from[current]
+            while current in cameFrom:
+                current = cameFrom[current]
                 path.append(current)
             path.reverse()
             return path
         
         for dx, dy in directions:
             neighbor = (current[0] + dx, current[1] + dy)
-            if 0 <= neighbor[0] < maze_size and 0 <= neighbor[1] < maze_size:
+            if 0 <= neighbor[0] < size and 0 <= neighbor[1] < size:
                 if maze[neighbor[0]][neighbor[1]] not in (1, 2, 3):
                     continue
-                tentative_g_score = g_score[current] + 1
-                if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
-                    came_from[neighbor] = current
-                    g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = tentative_g_score + manhattan_distance(neighbor, goal_pos)
+                tentativeGScore = gScore[current] + 1
+                if neighbor not in gScore or tentativeGScore < gScore[neighbor]:
+                    cameFrom[neighbor] = current
+                    gScore[neighbor] = tentativeGScore
+                    fScore[neighbor] = tentativeGScore + manhattanDistance(neighbor, goal)
                     counter += 1
-                    open_list.put((f_score[neighbor], counter, neighbor))
-    
-    print("Không tìm thấy đường đi!")
+                    openList.put((fScore[neighbor], counter, neighbor))
     return None
 
 def q_learning(maze, maze_size, start, goal, episodes = 1000):
