@@ -37,7 +37,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {
-    background-image: url('C:/TTNT_MazeGame/image/background.png');
+    background-image: url('image/background.png');
 	background-repeat: no-repeat; /* Không lặp lại ảnh */
 	background-position: center; /* Căn giữa */
 	background-size: cover; /* Ảnh bao phủ toàn bộ widget */

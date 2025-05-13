@@ -1,24 +1,33 @@
 import sys
-import random
-from algorithm import a_star, q_learning, dfs
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton
+import pandas as pd
+from datetime import datetime
+from algorithm import dfs, a_star, and_or_search, steepest_ascent_hill_climbing, backtracking, q_learning
 from PyQt6.uic import loadUi
 from PyQt6.QtMultimedia import QMediaPlayer, QAudioOutput
 from PyQt6.QtGui import QPainter, QPixmap, QImage, QPen, QColor
 from PyQt6.QtCore import Qt, QUrl, QTimer, QCoreApplication, QThread
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QLabel
 
 import os
 os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "0"
 
 class MazeWidget(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, map_index=0, lbl_time=None):
         super().__init__(parent)
 
-        self.current_algorithm = None
+        self.map_index =  map_index # Chỉ số của mê cung
+        self.current_algorithm = None # Thuật toán hiện tại
         self.auto_solving = False  # Trạng thái tự động giải
-        self.game_over = False  # Thêm biến trạng thái game_over
+        self.game_over = False  # Trạng thái game_over
         
-       # Initialize footstep sound with QMediaPlayer
+        self.step_count = 0  # Đếm số bước đi
+        self.lbl_time = lbl_time       
+        self.time_elapsed = 0  # Thời gian đã trôi qua (tính bằng giây)
+        self.timer = QTimer(self)  # Timer để đếm thời gian
+        self.timer.timeout.connect(self.update_time)  # Kết nối với hàm cập nhật thời gian
+        self.time_started = False  # Trạng thái bắt đầu đếm thời gian
+        
+       # Khởi tạo âm thanh bước chân
         self.step_player = QMediaPlayer(self)
         step_audio_output = QAudioOutput(self)  # Create a separate QAudioOutput for step_player
         self.step_player.setAudioOutput(step_audio_output)
@@ -31,14 +40,8 @@ class MazeWidget(QWidget):
         self.win_sound.setAudioOutput(win_audio_output)
         self.win_sound.setSource(QUrl.fromLocalFile("music\\game_win.mp3"))
 
-        # Khởi tạo âm thanh thua
-        self.lose_sound = QMediaPlayer(self)
-        lose_audio_output = QAudioOutput(self)
-        self.lose_sound.setAudioOutput(lose_audio_output)
-        self.lose_sound.setSource(QUrl.fromLocalFile("music\\game_over.mp3"))
-
         # Cài đặt kích thước mê cung và hình ảnh
-        self.maze_size = 21
+        self.maze_size = 25
         self.maze = []
         self.wall_image = QPixmap("image\\wall.png")
         self.player_images = {
@@ -54,69 +57,107 @@ class MazeWidget(QWidget):
         self.cell_size = 30
 
         # Tạo mê cung và đặt vị trí người chơi
-        self.create_and_draw_maze(self.maze_size)
+        self.create_and_draw_maze(self.map_index)
         self.player_pos = [1, 0]
         
         # Gọi auto_solve ngay sau khi mê cung được tạo
-        QTimer.singleShot(500, self.auto_solve)  # Gọi sau 500ms để đảm bảo giao diện được load
+        QTimer.singleShot(1000, self.auto_solve)  # Gọi sau 1000ms để đảm bảo giao diện được load
         self.setFocus()
 
     def create_and_draw_maze(self, size):
-        self.maze = self.generate_maze(size)
+        self.maze = self.generate_maze(self.map_index)
+        self.time_elapsed = 0  # Đặt lại thời gian khi tạo mê cung mới
+        self.step_count = 0  # Đặt lại số bước đi
+        self.time_started = False  # Đặt lại trạng thái thời gian
+        self.timer.stop()  # Dừng timer nếu đang chạy
+        self.update_time_label()  # Cập nhật nhãn thời gian
         self.update()  # Gọi lại paintEvent để vẽ mê cung
 
-    def generate_maze(self, size):
-        # Khởi tạo mê cung
-        maze = [[0 for _ in range(size)] for _ in range(size)]
+    def generate_maze(self, map_index):
+        # Mặc định sẵn 3 mê cung
+        maze_list = [
+            [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [2, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0],
+            [0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0],
+            [0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0],
+            [0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0],
+            [0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+            [0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0],
+            [0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0],
+            [0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 0, 0],
+            [0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 1, 1, 0],
+            [0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0],
+            [0, 1, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0],
+            [0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+            [0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0],
+            [0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0],
+            [0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0],
+            [0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0],
+            [0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0],
+            [0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0],
+            [0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0]], # map 1
+            
+            [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [2, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0],
+            [0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0],
+            [0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0],
+            [0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0],
+            [0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0],
+            [0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0],
+            [0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+            [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0],
+            [0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0],
+            [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0],
+            [0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+            [0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+            [0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0]], # map 2
+            
+            [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [2, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0],
+            [0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0],
+            [0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0],
+            [0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 0],
+            [0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0],
+            [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0],
+            [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0],
+            [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0],
+            [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0],
+            [0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0],
+            [0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0]] # map 3
+        ]
+
+        selected_maze = maze_list[map_index]
         
-        # Giá trị 1: lối đi, 0: tường
-        # Bao quanh mê cung bằng tường (giá trị 0)
-        for i in range(size):
-            maze[0][i] = 0  # Hàng trên cùng
-            maze[size - 1][i] = 0  # Hàng dưới cùng
-            maze[i][0] = 0  # Cột bên trái
-            maze[i][size - 1] = 0  # Cột bên phải
-
-        # Điểm bắt đầu mê cung
-        start = (1, 0)
-        stack = [start]
-        maze[start[1]][start[0]] = 1
-
-        # duyệt mê cung bằng dfs
-        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
-
-        while stack:
-            x, y = stack[-1]
-            random.shuffle(directions)
-            moved = False
-            for dx, dy in directions:
-                nx, ny = x + dx, y + dy
-                if 1 <= nx < size - 1 and 1 <= ny < size - 1 and maze[ny][nx] == 0:
-                    count = sum(
-                        maze[ny + dy2][nx + dx2] == 1
-                        for dx2, dy2 in directions
-                        if 0 <= nx + dx2 < size and 0 <= ny + dy2 < size
-                    )
-                    if count <= 1:
-                        maze[ny][nx] = 1
-                        stack.append((nx, ny))
-                        moved = True
-                        break
-            if not moved:
-                stack.pop()
-
-        # Đặt điểm bắt đầu
-        maze[1][0] = 2  # Start
-        maze[0][1] = 0
-        
-        # Đặt điểm kết thúc tại hàng cuối (size - 1)
-        end_row = size - 1
-        for col in range(size - 2, 0, -1):  # Duyệt từ phải qua trái
-            if maze[end_row - 1][col] == 1:  # Kiểm tra ô phía trên là lối đi
-                maze[end_row][col] = 3  # Đặt điểm kết thúc
-                break
-
-        return maze
+        return selected_maze
 
     def resizeEvent(self, event):
         self.cell_size = min(self.width() // self.maze_size, self.height() // self.maze_size)
@@ -134,19 +175,20 @@ class MazeWidget(QWidget):
                 x = col * self.cell_size
                 y = row * self.cell_size
                 
-                if self.maze[row][col] == 0:  # Wall
+                if self.maze[row][col] == 0:  # Tường
                     painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.wall_image)                    
-                elif self.maze[row][col] == 1:  # W
+                elif self.maze[row][col] == 1:  # Lối đi
                     painter.fillRect(x, y, self.cell_size, self.cell_size, QColor("#edb934"))
-                elif self.maze[row][col] == 2:  # Start
+                elif self.maze[row][col] == 2:  # Điểm bắt đầu
                     painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.start_image)
-                elif self.maze[row][col] == 3:  # End
+                elif self.maze[row][col] == 3:  # Điểm kết thúc
                     painter.drawPixmap(x, y, self.cell_size, self.cell_size, self.goal_image)
         
         # Vẽ người chơi
         scaled_image = self.current_player_image.scaled(
             self.cell_size, self.cell_size,
-            Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            Qt.AspectRatioMode.KeepAspectRatio, 
+            Qt.TransformationMode.SmoothTransformation
         )
         player_x = self.player_pos[1] * self.cell_size + (self.cell_size - scaled_image.width()) // 2
         player_y = self.player_pos[0] * self.cell_size + (self.cell_size - scaled_image.height()) // 2
@@ -166,19 +208,22 @@ class MazeWidget(QWidget):
             if goal:
                 break
         
-        if not goal:
-            print("Không tìm thấy đích.")
-            return
-        
         path = self.current_algorithm(self.maze, self.maze_size, start, goal)
         if not path:
             print("Không có đường đi đến đích.")
             return
         
         # Di chuyển người chơi theo đường đi
-        self.move_player_along_path(path)
-
+        self.move_player_along_path(path)        
+    
     def move_player_along_path(self, path):
+        # Bắt đầu đồng hồ nếu chưa chạy
+        if not self.time_started:
+            self.time_started = True
+            self.timer.start(100)
+            
+        self.step_count = 0  # Đặt lại số bước đi
+        
         # Di chuyển người chơi từng bước trên đường đi
         for i in range(len(path) - 1):
             if not self.auto_solving:  # Kiểm tra trạng thái dừng
@@ -202,7 +247,7 @@ class MazeWidget(QWidget):
 
             # Cập nhật vị trí người chơi
             self.player_pos = list(next_pos)
-
+            self.step_count += 1
             self.step_player.play()
 
             # Vẽ lại giao diện
@@ -210,22 +255,22 @@ class MazeWidget(QWidget):
             QCoreApplication.processEvents()  # Cập nhật giao diện
 
             # Nghỉ giữa các bước
-            QThread.msleep(300)  # 200ms giữa mỗi bước di chuyển
+            QThread.msleep(300)  # 300ms giữa mỗi bước di chuyển
 
         # Đảm bảo người chơi đứng ở vị trí cuối cùng (đích)
         self.player_pos = list(path[-1])
         self.update()  # Vẽ lại lần cuối
         self.win_game()
 
-
     def stop_auto_solve(self):
         self.auto_solving = False  # Dừng tự động giải
-
-    def set_algorithm(self, algorithm_name):
-        self.current_algorithm = algorithm_name
-
+        self.timer.stop()  # Dừng timer khi dừng giải tự động
+        self.time_started = False
+    
     def win_game(self):
         self.game_over = True  # Ngăn người chơi di chuyển
+        self.timer.stop()  # Dừng timer khi đến đích
+        self.time_started = False
             
         # Phát âm thanh thắng
         self.win_sound.play()
@@ -233,8 +278,79 @@ class MazeWidget(QWidget):
         # Gọi hàm hiển thị Win từ MyWindow
         main_window = self.window()
         if isinstance(main_window, MyWindow):
+            self.save_to_excel(self.current_algorithm, self.map_index) #lưu vào Excel
             main_window.show_win_game()
-    
+
+    def update_time(self):
+        self.time_elapsed += 100  # tăng 100ms mỗi lần gọi (vì timer mỗi 100ms)
+        self.update_time_label()
+
+    def update_time_label(self):
+        total_ms = self.time_elapsed
+        minutes = total_ms // 60000
+        seconds = (total_ms % 60000) // 1000
+        centiseconds = (total_ms % 1000) // 10  # 2 chữ số mili giây: 0–99
+
+        time_text = f"{minutes:02d}:{seconds:02d}.{centiseconds:02d}"
+        print("Updating time:", time_text)
+
+        if self.lbl_time:
+            self.lbl_time.setText(time_text)
+
+    def save_to_excel(self, algorithm, map_index):
+        # Xác định tên thuật toán
+        algorithm_name = (
+            "DFS" if algorithm == dfs else
+            "A*" if algorithm == a_star else
+            "Q-Learning" if algorithm == q_learning else
+            "And-Or Search" if algorithm == and_or_search else
+            "Steepest Ascent Hill Climbing" if algorithm == steepest_ascent_hill_climbing else
+            "Backtracking" if algorithm == backtracking else
+            "Unknown"
+        )
+        
+        # Xác định tên map dựa trên map_index
+        map_name = (
+            "Map 1" if map_index == 0 else
+            "Map 2" if map_index == 1 else
+            "Map 3" if map_index == 2 else
+            "Unknown"
+        )
+        
+        # Lấy thời gian hiện tại
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+       
+        # Định dạng thời gian đến đích
+        total_ms = self.time_elapsed
+        minutes = total_ms // 60000
+        seconds = (total_ms % 60000) // 1000
+        centiseconds = (total_ms % 1000) // 10
+        time_to_goal = f"{minutes:02d}:{seconds:02d}.{centiseconds:02d}"
+        
+        # Tạo dữ liệu để lưu
+        data = {
+            "DateTime": [current_time],
+            "Algorithm": [algorithm_name],
+            "Maze": [map_name],
+            "TimeToGoal": [time_to_goal],
+            "Steps": [self.step_count]
+        }
+        df = pd.DataFrame(data)
+        # Lưu vào file Excel
+        excel_file = "game_records.xlsx"
+        try:
+            # Nếu file đã tồn tại, đọc và nối dữ liệu
+            if os.path.exists(excel_file):
+                existing_df = pd.read_excel(excel_file, engine='openpyxl')  # Chỉ định engine để đọc
+                df = pd.concat([existing_df, df], ignore_index=True)
+            
+            # Ghi dữ liệu vào file Excel
+            df.to_excel(excel_file, index=False, engine='openpyxl')  # Chỉ định engine để ghi
+            print(f"Saved game record to {excel_file}")
+        except Exception as e:
+            print(f"Error saving to Excel: {e}")
+
+
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -252,8 +368,10 @@ class MyWindow(QMainWindow):
         # Kết nối tín hiệu statusChanged để kiểm tra khi nào âm thanh kết thúc
         self.player.mediaStatusChanged.connect(self.handle_media_status_changed)
 
-        self.btnStart.clicked.connect(self.change_ui_level)  # Kết nối nút start
-        self.maze_size = 21  # Kích thước mặc định của mê cung (sẽ thay đổi theo lựa chọn)
+        self.btnStart.clicked.connect(self.change_ui_map)  # Kết nối nút start
+        self.maze_size = 25  # Kích thước mặc định của mê cung
+        self.map_index = 0
+        self.lblTime = None  # Thêm tham chiếu đến lblTime
 
         # Lưu trữ trạng thái âm nhạc
         self.music_playing = True
@@ -261,8 +379,7 @@ class MyWindow(QMainWindow):
         # Set volume through QAudioOutput
         audio_output.setVolume(0.3)  # Adjust volume (value from 0.0 to 1.0)
 
-    def change_ui_level(self):
-            
+    def change_ui_map(self):
         # Xóa widget Win
         if hasattr(self, 'win_game_widget') and self.win_game_widget:
             self.win_game_widget.hide()
@@ -278,24 +395,21 @@ class MyWindow(QMainWindow):
         loadUi("ui\\level.ui", new_widget)
 
         # Gắn sự kiện cho từng nút
-        btn_easy = new_widget.findChild(QPushButton, "btnEasy")
-        btn_medium = new_widget.findChild(QPushButton, "btnMedium")
-        btn_hard = new_widget.findChild(QPushButton, "btnHard")
-        btn_expert = new_widget.findChild(QPushButton, "btnExpert")
+        btn_map1 = new_widget.findChild(QPushButton, "btnMap1")
+        btn_map2 = new_widget.findChild(QPushButton, "btnMap2")
+        btn_map3 = new_widget.findChild(QPushButton, "btnMap3")
 
-        if btn_easy:
-            btn_easy.clicked.connect(lambda: self.change_ui_algorithm(21))
-        if btn_medium:
-            btn_medium.clicked.connect(lambda: self.change_ui_algorithm(31))
-        if btn_hard:
-            btn_hard.clicked.connect(lambda: self.change_ui_algorithm(41))
-        if btn_expert:
-            btn_expert.clicked.connect(lambda: self.change_ui_algorithm(51))
-
+        if btn_map1:
+            btn_map1.clicked.connect(lambda: self.change_ui_algorithm(0))
+        if btn_map2:
+            btn_map2.clicked.connect(lambda: self.change_ui_algorithm(1))
+        if btn_map3:
+            btn_map3.clicked.connect(lambda: self.change_ui_algorithm(2))
+    
         self.setCentralWidget(new_widget)
         self.update()
 
-    def change_ui_algorithm(self, size):  
+    def change_ui_algorithm(self, map_index):  
         # Xóa widget Win
         if hasattr(self, 'win_game_widget') and self.win_game_widget:
             self.win_game_widget.hide()
@@ -309,22 +423,33 @@ class MyWindow(QMainWindow):
         # Tạo một widget mới từ level.ui
         new_widget = QWidget(self)
         loadUi("ui\\algorithm.ui", new_widget)
+        
+        self.map_index = map_index
 
         # Gắn sự kiện cho từng nút
         btn_Dfs = new_widget.findChild(QPushButton, "btnDfs")
         btn_AStar = new_widget.findChild(QPushButton, "btnAStar")
+        btn_Aos = new_widget.findChild(QPushButton, "btnAos")
+        btn_Sahc = new_widget.findChild(QPushButton, "btnSahc")
+        btn_Backtracking = new_widget.findChild(QPushButton, "btnBacktracking")
         btn_QLearning = new_widget.findChild(QPushButton, "btnQLearning")
 
         if btn_Dfs:
-            btn_Dfs.clicked.connect(lambda: self.start_game_with_level(size, dfs))
+            btn_Dfs.clicked.connect(lambda: self.start_game_with_algorithm(dfs))
         if btn_AStar:
-            btn_AStar.clicked.connect(lambda: self.start_game_with_level(size, a_star))
+            btn_AStar.clicked.connect(lambda: self.start_game_with_algorithm(a_star))
+        if btn_Aos:
+            btn_Aos.clicked.connect(lambda: self.start_game_with_algorithm(and_or_search))
+        if btn_Sahc:
+            btn_Sahc.clicked.connect(lambda: self.start_game_with_algorithm(steepest_ascent_hill_climbing))
+        if btn_Backtracking:
+            btn_Backtracking.clicked.connect(lambda: self.start_game_with_algorithm(backtracking))
         if btn_QLearning:
-            btn_QLearning.clicked.connect(lambda: self.start_game_with_level(size, q_learning))
+            btn_QLearning.clicked.connect(lambda: self.start_game_with_algorithm(q_learning))
 
         # Tìm nút btnBack
         self.btnBack = new_widget.findChild(QPushButton, "btnBack")
-        self.btnBack.clicked.connect(self.change_ui_level)
+        self.btnBack.clicked.connect(self.change_ui_map)
 
         self.setCentralWidget(new_widget)
         self.update()
@@ -340,7 +465,7 @@ class MyWindow(QMainWindow):
             self.player.play()  # Phát nhạc
         self.music_playing = not self.music_playing  # Đảo trạng thái nhạc
 
-    def start_game_with_level(self, maze_size, algorithm):
+    def start_game_with_algorithm(self, algorithm):
         # Xóa widget Win
         if hasattr(self, 'win_game_widget') and self.win_game_widget:
             self.win_game_widget.hide()
@@ -350,12 +475,9 @@ class MyWindow(QMainWindow):
         # Xóa centralWidget cũ nếu tồn tại
         if self.centralWidget():
             self.centralWidget().deleteLater()
-            
-        self.maze_size = maze_size  # Lưu kích thước mê cung
+
         self.algorithm = algorithm
-        
-        # Pass the spawn time to the maze widget
-        self.change_ui()  # Modify to pass spawn_time to the UI change
+        self.change_ui()
 
     def change_ui(self):
         # Tạo một widget mới từ main.ui
@@ -367,11 +489,16 @@ class MyWindow(QMainWindow):
         if not maze_widget_placeholder:
             raise RuntimeError("Widget 'mazeWidget' không tồn tại trong main.ui!")
 
+        # Gán self.lblTime trước
+        self.lblTime = new_widget.findChild(QLabel, "lblTime")
+        if not self.lblTime:
+            raise RuntimeError("lblTime không được tìm thấy trong main.ui!")
+
         # Tạo MazeWidget với kích thước tương ứng
-        maze_widget = MazeWidget(maze_widget_placeholder)
+        maze_widget = MazeWidget(maze_widget_placeholder, map_index=self.map_index, lbl_time=self.lblTime)
         maze_widget.maze_size = self.maze_size  # Gán kích thước mê cung
         maze_widget.current_algorithm = self.algorithm
-        maze_widget.create_and_draw_maze(self.maze_size)  # Tạo mê cung
+        maze_widget.create_and_draw_maze(self.map_index)  # Tạo mê cung với map_index
         maze_widget.setGeometry(0, 0, maze_widget_placeholder.width(), maze_widget_placeholder.height())
         maze_widget.show()
 
@@ -388,34 +515,11 @@ class MyWindow(QMainWindow):
 
         # Tìm nút btnBack
         self.btnBack = new_widget.findChild(QPushButton, "btnBack")
-        self.btnBack.clicked.connect(self.change_ui_level)
+        self.btnBack.clicked.connect(self.change_ui_algorithm)
         self.btnBack.clicked.connect(maze_widget.stop_auto_solve)
-
-        # Tìm nút btnReNew
-        self.btnReNew = new_widget.findChild(QPushButton, "btnReNew")
-        if self.btnReNew:
-            self.btnReNew.clicked.connect(lambda: self.recreate_maze(maze_widget))
-            self.btnReNew.clicked.connect(lambda: maze_widget.setFocus())
 
         self.setCentralWidget(new_widget)
     
-    def recreate_maze(self, maze_widget):
-        if not isinstance(maze_widget, MazeWidget):
-            raise ValueError("Provided widget is not a valid MazeWidget instance.")
-        
-        maze_widget.create_and_draw_maze(maze_widget.maze_size)
-
-        # Đặt lại vị trí người chơi
-        maze_widget.player_pos = [1, 0]
-        # Gọi auto_solve ngay sau khi mê cung được tạo
-        maze_widget.stop_auto_solve()
-        QTimer.singleShot(500, maze_widget.auto_solve)  # Gọi sau 500ms để đảm bảo giao diện được load
-        self.setFocus()
-
-        maze_widget.update()
-        # Cập nhật lại hướng nhân vật
-        maze_widget.current_player_image = maze_widget.player_images["right"]  # Ví dụ, hướng ban đầu là "right"
-        
     def show_win_game(self):
         self.win_game_widget = QWidget(self)
         loadUi("ui\\win.ui", self.win_game_widget)
@@ -427,24 +531,33 @@ class MyWindow(QMainWindow):
         self.win_game_widget.setGeometry(widget_rect)
         
         # Kết nối các nút
-        btn_continue = self.win_game_widget.findChild(QPushButton, "btnContinue")
-        btn_new_level = self.win_game_widget.findChild(QPushButton, "btnNewLevel")
+        btn_again = self.win_game_widget.findChild(QPushButton, "btnAgain")
+        btn_new_map = self.win_game_widget.findChild(QPushButton, "btnNewMap")
         btn_new_algorithm = self.win_game_widget.findChild(QPushButton, "btnNewAlgorithm")
 
-        if btn_continue:
-            btn_continue.clicked.connect(lambda: self.start_game_with_level(self.maze_size, self.algorithm))
-        if btn_new_level:
-            btn_new_level.clicked.connect(self.change_ui_level)
+        if btn_again:
+            btn_again.clicked.connect(lambda: self.start_game_with_algorithm(self.algorithm))
+        if btn_new_map:
+            btn_new_map.clicked.connect(self.change_ui_map)
         if btn_new_algorithm:
-           btn_new_algorithm.clicked.connect(lambda: self.change_ui_algorithm(self.maze_size))
+           btn_new_algorithm.clicked.connect(lambda: self.change_ui_algorithm(self.map_index))
             
         # Vô hiệu hóa các nút bên dưới
         if hasattr(self, 'btnMusic'):
             self.btnMusic.setEnabled(False)
         if hasattr(self, 'btnBack'):
             self.btnBack.setEnabled(False)
-        if hasattr(self, 'btnReNew'):
-            self.btnReNew.setEnabled(False)
+
+        # Tìm label thời gian
+        lbl_result_time = self.win_game_widget.findChild(QLabel, "label_result_time")
+        maze_widget = self.centralWidget().findChild(MazeWidget)
+        if lbl_result_time and maze_widget:
+            total_ms = maze_widget.time_elapsed
+            minutes = total_ms // 60000
+            seconds = (total_ms % 60000) // 1000
+            centiseconds = (total_ms % 1000) // 10
+
+            lbl_result_time.setText(f"Arrived the goal in {minutes:02d}:{seconds:02d}.{centiseconds:02d} seconds")
         
         self.win_game_widget.show()
 

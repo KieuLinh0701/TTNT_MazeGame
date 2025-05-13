@@ -19,10 +19,10 @@
   <widget class="QLabel" name="lblTime">
    <property name="geometry">
     <rect>
-     <x>480</x>
-     <y>100</y>
+     <x>540</x>
+     <y>90</y>
      <width>441</width>
-     <height>81</height>
+     <height>91</height>
     </rect>
    </property>
    <property name="styleSheet">
@@ -44,9 +44,9 @@
   <widget class="QPushButton" name="btnDfs">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>550</x>
      <y>210</y>
-     <width>270</width>
+     <width>421</width>
      <height>70</height>
     </rect>
    </property>
@@ -76,9 +76,9 @@ QPushButton:pressed {
   <widget class="QPushButton" name="btnAStar">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>550</x>
      <y>310</y>
-     <width>270</width>
+     <width>421</width>
      <height>70</height>
     </rect>
    </property>
@@ -105,12 +105,12 @@ QPushButton:pressed {
     <string>A STAR</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btnExpert">
+  <widget class="QPushButton" name="btnSahc">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>550</x>
      <y>510</y>
-     <width>270</width>
+     <width>421</width>
      <height>70</height>
     </rect>
    </property>
@@ -134,15 +134,15 @@ QPushButton:pressed {
 }</string>
    </property>
    <property name="text">
-    <string>?</string>
+    <string>STEEPEST-ASCENT HILL-CLIMBING</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btnHard">
+  <widget class="QPushButton" name="btnAos">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>550</x>
      <y>410</y>
-     <width>270</width>
+     <width>421</width>
      <height>70</height>
     </rect>
    </property>
@@ -166,7 +166,7 @@ QPushButton:pressed {
 }</string>
    </property>
    <property name="text">
-    <string>?</string>
+    <string>AND-OR SEARCH</string>
    </property>
   </widget>
   <widget class="QLabel" name="label">
@@ -223,9 +223,9 @@ QPushButton:pressed {
   <widget class="QPushButton" name="btnQLearning">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>550</x>
      <y>710</y>
-     <width>270</width>
+     <width>421</width>
      <height>70</height>
     </rect>
    </property>
@@ -252,12 +252,12 @@ QPushButton:pressed {
     <string>Q - LEARNING</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="btnHard_2">
+  <widget class="QPushButton" name="btnBacktracking">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>550</x>
      <y>610</y>
-     <width>270</width>
+     <width>421</width>
      <height>70</height>
     </rect>
    </property>
@@ -281,7 +281,7 @@ QPushButton:pressed {
 }</string>
    </property>
    <property name="text">
-    <string>?</string>
+    <string>BACKTRACKING</string>
    </property>
   </widget>
  </widget>
