@@ -42,7 +42,6 @@ def a_star(maze, mazeSize, start, goal):
     openList = PriorityQueue()
     counter = 0  # Bộ đếm để phân biệt thứ tự các phần tử
     openList.put((0, counter, start))
-    counter += 1
     cameFrom = {}
     gScore = {start: 0}
     fScore = {start: manhattan_distance(start, goal)}
