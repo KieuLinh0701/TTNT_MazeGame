@@ -35,6 +35,9 @@ Solution: Chuỗi các ô từ xuất phát đến đích, hiển thị bằng �
 - Ảnh GIF:
   
 - Ảnh so sánh hiệu suất trên 3 bản đồ:
+
+  ![image](https://github.com/user-attachments/assets/ca9b547d-99ad-46be-b4f0-4f21eb61a916)
+
   
 - Nhận xét hiệu suất:
   
