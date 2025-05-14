@@ -11,10 +11,11 @@ def dfs(maze, size, start, goal):
     while stack:
         current = stack.pop()  # Lấy ra phần tử cuối cùng trong stack
         if current == goal:
-            path = [current]
+            path = []
             while current in cameFrom:
-                current = cameFrom[current]
                 path.append(current)
+                current = cameFrom[current]
+            path.append(start)
             path.reverse()
             return path
 
@@ -50,7 +51,7 @@ def a_star(maze, mazeSize, start, goal):
     while not openList.empty():
         _, _, current = openList.get()
         if current == goal:
-            path = [current]
+            path = []
             while current in cameFrom:
                 path.append(current)
                 current = cameFrom[current]
