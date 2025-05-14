@@ -36,9 +36,8 @@ Solution: Chuỗi các ô từ xuất phát đến đích, hiển thị bằng �
   
 - Ảnh so sánh hiệu suất trên 3 bản đồ:
 
-  ![image](https://github.com/user-attachments/assets/ca9b547d-99ad-46be-b4f0-4f21eb61a916)
+![image](https://github.com/user-attachments/assets/ca9b547d-99ad-46be-b4f0-4f21eb61a916)
 
-  
 - Nhận xét hiệu suất:
   
 Kém hiệu quả trên Map 1 (48.20 giây, 174 bước) và Map 2 (31.57 giây, 114 bước) do khám phá sâu, tạo đường đi dài.
@@ -70,6 +69,8 @@ Solution: Đường đi ngắn nhất hoặc gần tối ưu, hiển thị bằn
 - Ảnh GIF
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
+
+![image](https://github.com/user-attachments/assets/24649885-f806-466b-88d8-ae4f75cb2a9e)
 
 - Nhận xét hiệu suất
 
@@ -103,6 +104,8 @@ Solution: Đường đi gần tối ưu, có thể không ngắn nhất do cực
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
 
+![image](https://github.com/user-attachments/assets/129afd05-b448-48eb-ae48-7d1757ef4933)
+
 - Nhận xét hiệu suất
 
 Hiệu quả trên Map 2 và Map 3 (12.60 giây, 46 bước) nhờ heuristic Manhattan.
@@ -133,6 +136,8 @@ Solution: Đường đi tối ưu hoặc gần tối ưu sau huấn luyện, hi�
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
 
+![image](https://github.com/user-attachments/assets/7cbc46c2-e6f6-4c0d-981f-9379db054beb)
+
 - Nhận xét hiệu suất
 
 Hiệu suất cao: Map 1 (14.97 giây, 54 bước), Map 2 và Map 3 (12.60 giây, 46 bước).
@@ -158,6 +163,8 @@ Solution: Đường đi từ xuất phát đến đích thỏa mãn tất cả r
 - Ảnh GIF
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
+
+![image](https://github.com/user-attachments/assets/579f8722-0de0-41de-9d42-c322829ed656)
 
 - Nhận xét hiệu suất
 
@@ -188,6 +195,8 @@ Solution: Đường đi khả thi, không nhất thiết tối ưu, hiển thị
 - Ảnh GIF
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
+
+![image](https://github.com/user-attachments/assets/affc50e7-ab2a-41a8-975c-a87bd9093797)
 
 - Nhận xét hiệu suất
 
