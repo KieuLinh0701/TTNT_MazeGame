@@ -244,50 +244,41 @@ class MazeWidget(QWidget):
         self.move_player_along_path(self.path)        
     
     def move_player_along_path(self, path):
-        # Bắt đầu đồng hồ nếu chưa chạy
         if not self.time_started:
             self.time_started = True
-            self.timer.start(100)
-            
-        self.step_count = 0  # Đặt lại số bước đi
-        
-        # Di chuyển người chơi từng bước trên đường đi
-        for i in range(len(path) - 1):
-            if not self.auto_solving:  # Kiểm tra trạng thái dừng
-                return
+            self.timer.start(100)  # cập nhật thời gian mỗi 100ms
 
-            current_pos = path[i]
-            next_pos = path[i + 1]
+        self.path = path
+        self.step_index = 0
+        self.step_count = 0
+        self._move_step()
+    def _move_step(self):
+        if self.step_index >= len(self.path) - 1:
+            self.win_game()
+            return
 
-            # Xác định hướng di chuyển
-            dx = next_pos[1] - current_pos[1]  # Sự thay đổi theo cột (x)
-            dy = next_pos[0] - current_pos[0]  # Sự thay đổi theo hàng (y)
+        current_pos = self.path[self.step_index]
+        next_pos = self.path[self.step_index + 1]
 
-            if dx == 1:  # Di chuyển sang phải
-                self.current_player_image = self.player_images["right"]
-            elif dx == -1:  # Di chuyển sang trái
-                self.current_player_image = self.player_images["left"]
-            elif dy == 1:  # Di chuyển xuống
-                self.current_player_image = self.player_images["down"]
-            elif dy == -1:  # Di chuyển lên
-                self.current_player_image = self.player_images["up"]
+        dx = next_pos[1] - current_pos[1]
+        dy = next_pos[0] - current_pos[0]
 
-            # Cập nhật vị trí người chơi
-            self.player_pos = list(next_pos)
-            self.step_count += 1
-            self.step_player.play()
+        if dx == 1:
+            self.current_player_image = self.player_images["right"]
+        elif dx == -1:
+            self.current_player_image = self.player_images["left"]
+        elif dy == 1:
+            self.current_player_image = self.player_images["down"]
+        elif dy == -1:
+            self.current_player_image = self.player_images["up"]
 
-            # Vẽ lại giao diện
-            self.update()
-            QCoreApplication.processEvents()  # Cập nhật giao diện
+        self.player_pos = list(next_pos)
+        self.step_count += 1
+        self.update()
+        self.step_player.play()
+        self.step_index += 1
 
-            # Nghỉ giữa các bước
-            QThread.msleep(300)  # 300ms giữa mỗi bước di chuyển
-
-        # Đảm bảo người chơi đứng ở vị trí cuối cùng (đích)
-        self.player_pos = list(path[-1])
-        self.update()  # Vẽ lại lần cuối
-        self.win_game()
+        QTimer.singleShot(300, self._move_step)  # gọi lại chính nó sau 300ms
 
     def stop_auto_solve(self):
         self.auto_solving = False  # Dừng tự động giải
