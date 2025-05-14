@@ -50,7 +50,7 @@ def a_star(maze, mazeSize, start, goal):
     while not openList.empty():
         _, _, current = openList.get()
         if current == goal:
-            path = []
+            path = [current]
             while current in cameFrom:
                 path.append(current)
                 current = cameFrom[current]
@@ -278,3 +278,5 @@ def q_learning(maze, maze_size, start, goal, episodes = 1000):
     if current_pos == goal:
         return path
     return []  # Không tìm thấy đường đi
+
+import random
