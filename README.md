@@ -35,12 +35,15 @@ Solution: Chuỗi các ô từ xuất phát đến đích, hiển thị bằng �
 - Ảnh đường đi áp dụng thuật toán vào mê cung:
 
 Map 1: 
+
 ![image](https://github.com/user-attachments/assets/9d530692-93d5-41cc-97ba-8915d4cf08a6)
 
 Map 2: 
+
 ![image](https://github.com/user-attachments/assets/b7298f84-abcd-4f9c-af81-8afe6509166c)
 
 Map 3: 
+
 ![image](https://github.com/user-attachments/assets/a0f552f1-38c8-4a3a-9476-196727e8fe04)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ:
@@ -78,12 +81,15 @@ Solution: Đường đi ngắn nhất hoặc gần tối ưu, hiển thị bằn
 - Ảnh đường đi áp dụng thuật toán vào mê cung:
 
 Map 1: 
+
 ![image](https://github.com/user-attachments/assets/5f2b60f4-4e4e-4e7a-9990-a8802517cdf4)
 
 Map 2: 
+
 ![image](https://github.com/user-attachments/assets/be8080aa-d381-4c35-9b59-daca33415a7b)
 
 Map 3: 
+
 ![image](https://github.com/user-attachments/assets/9a0bf694-dec9-4bc8-b5d3-8e19f35d2e25)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
@@ -121,12 +127,15 @@ Solution: Đường đi gần tối ưu, có thể không ngắn nhất do cực
 - Ảnh đường đi áp dụng thuật toán vào mê cung:
 
 Map 1: 
+
 ![image](https://github.com/user-attachments/assets/a357a773-90fd-4e26-8213-e2ccf1e9bbd5)
 
 Map 2: 
+
 ![image](https://github.com/user-attachments/assets/5ea16e67-5468-4392-88ac-66a182a20c10)
 
 Map 3: 
+
 ![image](https://github.com/user-attachments/assets/1bd7c49c-1733-4cd7-b2e3-bbd24da8b1a1)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
@@ -162,12 +171,15 @@ Solution: Đường đi tối ưu hoặc gần tối ưu sau huấn luyện, hi�
 - Ảnh đường đi áp dụng thuật toán vào mê cung:
 
 Map 1: 
+
 ![image](https://github.com/user-attachments/assets/9fb5e34c-7d45-4ebb-b234-807c37e1769a)
 
 Map 2: 
+
 ![image](https://github.com/user-attachments/assets/7e14d8ef-5260-4c98-a606-b1ab7ee323f9)
 
 Map 3: 
+
 ![image](https://github.com/user-attachments/assets/4a39a58e-4d62-4901-bf34-fc286258b648)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
@@ -199,12 +211,15 @@ Solution: Đường đi từ xuất phát đến đích thỏa mãn tất cả r
 - Ảnh đường đi áp dụng thuật toán vào mê cung:
 
 Map 1: 
+
 ![image](https://github.com/user-attachments/assets/9b85abe7-2bc6-4851-8a87-b4dd3bbd2ab9)
 
 Map 2: 
+
 ![image](https://github.com/user-attachments/assets/56f03b31-0432-4a56-a55a-0888b85ee8f9)
 
 Map 3: 
+
 ![image](https://github.com/user-attachments/assets/e9f5404d-a2cf-4caa-96d8-edb1693a3c76)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
@@ -240,13 +255,16 @@ Solution: Đường đi khả thi, không nhất thiết tối ưu, hiển thị
 - Ảnh đường đi áp dụng thuật toán vào mê cung:
 
 Map 1: 
+
 ![image](https://github.com/user-attachments/assets/6376fccf-1d0a-4287-b3cf-c9e9b860f080)
 
 Map 2: 
+
 ![image](https://github.com/user-attachments/assets/5820fb4c-1222-4275-9805-5f277a288d1c)
 
 Map 3: 
-![image](https://github.com/user-attachments/assets/c8984e0f-0be7-447a-bf26-1c058577a7ef)
+
+![image](https://github.com/user-attachments/assets/2d7a5390-abf9-4451-8440-76c377abd4ae)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
 
