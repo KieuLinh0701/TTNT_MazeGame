@@ -322,3 +322,11 @@ Tối ưu AND-OR Search bằng cách giới hạn độ sâu hoặc tránh lặp
 
 Thêm bản đồ mê cung lớn hơn (ví dụ: 50x50) và phân tích độ lệch chuẩn để đánh giá tính ổn định.
 
+## Tài liệu tham khảo 
+
+- TS. Phan Thị Huyền Trang, Data Structures and Algorithms (Bài giảng Tuần 6), Tài liệu tham khảo lấy từ Utexlms [Truy cập ngày 12 tháng 05 năm 2025]
+- Wikipedia, “Giải thuật tìm kiếm A*”, Wikipedia. https://vi.wikipedia.org/wiki/Gi%E1%BA%A3i_thu%E1%BA%ADt_t%C3%ACm_ki%E1%BA%BFm_A*  [Truy cập ngày 12 tháng 05 năm 2025]
+- GeeksforGeeks, “Backtracking Algorithms” GeeksforGeeks. https://www.geeksforgeeks.org/introduction-to-backtracking-2/#what-is-backtracking [Truy cập ngày 12 tháng 05 năm 2025]
+- GeeksforGeeks, “Q-Learning in Reinforcement Learning” GeeksforGeeks. https://www.geeksforgeeks.org/q-learning-in-python/ [Truy cập ngày 12 tháng 05 năm 2025]
+- Wikipedia, "And–or tree". https://en.wikipedia.org/wiki/And%E2%80%93or_tree [Truy cập ngày 12 tháng 05 năm 2025]
+- A. Khan, “Steepest Ascent Hill Climbing,” AI: The Future, Jan. 6, 2018. https://aithefuture.wordpress.com/2018/01/06/steepest-ascent-hill-climbing/. [Truy cập ngày 12 tháng 05 năm 2025].
