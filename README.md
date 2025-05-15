@@ -86,11 +86,11 @@ Map 1:
 
 Map 2: 
 
-![GIF]((gif/a_map2.gif)
+![GIF](gif/a_map2.gif)
 
 Map 3: 
 
-![GIF]((gif/a_map3.gif)
+![GIF](gif/a_map3.gif)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
 
@@ -128,15 +128,15 @@ Solution: Đường đi gần tối ưu, có thể không ngắn nhất do cực
 
 Map 1: 
 
-![GIF]((gif/steepest_map1.gif)
+![GIF](gif/steepest_map1.gif)
 
 Map 2: 
 
-![GIF]((gif/steepest_map2.gif)
+![GIF](gif/steepest_map2.gif)
 
 Map 3: 
 
-![GIF]((gif/steepest_map3.gif)
+![GIF](gif/steepest_map3.gif)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
 
@@ -172,15 +172,15 @@ Solution: Đường đi tối ưu hoặc gần tối ưu sau huấn luyện, hi�
 
 Map 1: 
 
-![GIF]((gif/q_map1.gif)
+![GIF](gif/q_map1.gif)
 
 Map 2: 
 
-![GIF]((gif/q_map2.gif)
+![GIF](gif/q_map2.gif)
 
 Map 3: 
 
-![GIF]((gif/q_map3.gif)
+![GIF](gif/q_map3.gif)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
 
@@ -212,15 +212,15 @@ Solution: Đường đi từ xuất phát đến đích thỏa mãn tất cả r
 
 Map 1: 
 
-![GIF]((gif/backtracking_map1.gif)
+![GIF](gif/backtracking_map1.gif)
 
 Map 2: 
 
-![GIF]((gif/backtracking_map2.gif)
+![GIF](gif/backtracking_map2.gif)
 
 Map 3: 
 
-![GIF]((gif/backtracking_map3.gif)
+![GIF](gif/backtracking_map3.gif)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
 
@@ -256,14 +256,14 @@ Solution: Đường đi khả thi, không nhất thiết tối ưu, hiển thị
 
 Map 1: 
 
-![GIF]((gif/and_or_map1.gif)
+![GIF](gif/and_or_map1.gif)
 Map 2: 
 
-![GIF]((gif/and_or_map2.gif)
+![GIF](gif/and_or_map2.gif)
 
 Map 3: 
 
-![GIF]((gif/and_or_map3.gif)
+![GIF](gif/and_or_map3.gif)
 
 - Ảnh so sánh hiệu suất trên 3 bản đồ
 
