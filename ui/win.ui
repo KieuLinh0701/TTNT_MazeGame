@@ -79,7 +79,7 @@ QPushButton:pressed {
    <property name="styleSheet">
     <string notr="true">QLabel {
     font-family: bungee;
-    font-size: 30px;
+    font-size: 20px;
     color: #ffcc00; /* vàng nổi bật hơn */
     text-align: center;
     background-color: transparent;
@@ -89,7 +89,7 @@ QPushButton:pressed {
 
 QLabel#title {
     font-family: 'Verdana', sans-serif; /* Font chữ tùy chỉnh (có thể thay đổi theo sở thích) */
-    font-size: 30px;                   /* Kích thước chữ rất lớn */
+    font-size: 20px;                   /* Kích thước chữ rất lớn */
     color: #ffcc00;                    /* Màu vàng nổi bật (có thể thay đổi) */
     font-weight: bold;                 /* Làm chữ đậm */
     letter-spacing: 2px;               /* Tăng khoảng cách giữa các ký tự */
@@ -97,7 +97,7 @@ QLabel#title {
 </string>
    </property>
    <property name="text">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:72pt; color:#ffffff;&quot;&gt;FOUND THE WAY!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:72pt; color:#ffffff;&quot;&gt;FOUND!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
