@@ -257,6 +257,7 @@ Solution: Đường đi khả thi, không nhất thiết tối ưu, hiển thị
 Map 1: 
 
 ![GIF](gif/and_or_map1.gif)
+
 Map 2: 
 
 ![GIF](gif/and_or_map2.gif)
